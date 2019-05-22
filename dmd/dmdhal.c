@@ -60,10 +60,10 @@ void dmd_Init()
 	RCC_APB2PeriphClockCmd(DMD_GPIO_RCC, ENABLE);
     
     /* GPIO pin init for DAT, CLK, SS (LAT) & A, B (Output Mode) */
-	GPIO_InitStructure.GPIO_Pin = PIN_CLK | PIN_DAT | PIN_LAT | PIN_A | PIN_B;
+	GPIO_InitStructure.GPIO_Pin = DMD_PIN_CLK | DMD_PIN_DAT | DMD_PIN_LAT | DMD_PIN_A | DMD_PIN_B;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(PIN_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
 
 #elif defined(DMD_HUB75)
 	/*  GPIO RCC */
@@ -106,7 +106,7 @@ void dmd_Init()
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_EN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
 	
 	/* Time base configuration */
 	TIM_TimeBaseStructure.TIM_Period = PWM_PERIOD;
@@ -320,11 +320,11 @@ void dmd_SendData(uint8_t data)
     {
         if(data & 0x01)
         {
-			PIN_PORT->BRR  = PIN_DAT;
+			DMD_PIN_PORT->BRR  = DMD_PIN_DAT;
 		}
         else
         {
-			PIN_PORT->BSRR = PIN_DAT;
+			DMD_PIN_PORT->BSRR = DMD_PIN_DAT;
 		}
         data >>= 1;
         
@@ -368,11 +368,12 @@ void dmd_DisplayScan()
 {	    
 #if !defined(ENABLE_DMA) && defined(DMD_HUB12)
     uint16_t 	i = 0;
-    uint16_t 	rowsize = (DISPLAY_WIDTH / BYTE_SIZE) * DISPLAY_TOTAL;
+    uint16_t 	rowsize = (DISPLAY_WIDTH / 8) * DISPLAY_TOTAL;
     uint16_t 	offsetRow1 = rowsize * dmd_bDisplayScan;
     uint16_t 	offsetRow2 = offsetRow1 + (rowsize * DISPLAY_SCANRATE);
     uint16_t 	offsetRow3 = offsetRow2 + (rowsize * DISPLAY_SCANRATE);
     uint16_t 	offsetRow4 = offsetRow3 + (rowsize * DISPLAY_SCANRATE);
+	uint32_t	wGpio_Temp	= 0;
     
     for (i = 0; i < rowsize; i++) 
     {
@@ -381,9 +382,6 @@ void dmd_DisplayScan()
 		dmd_SendData(dmd_bDisplayBuffer[offsetRow2 + i]);
 		dmd_SendData(dmd_bDisplayBuffer[offsetRow1 + i]);
     }
-
-#elif defined(DMD_HUB_12)
-	uint32_t	wGpio_Temp	= 0;
 
 #elif defined(DMD_HUB75)
 	uint16_t	offsetHi	= DISPLAY_ROWSIZE * DISPLAY_ACROSS * DISPLAY_MODE * dmd_bDisplayScan;
@@ -412,7 +410,7 @@ void dmd_DisplayScan()
 			wGpio_Temp = DMD_PIN_A | DMD_PIN_B;
 			break;
 			
-#ifdef DISPLAY_SCANRATE >= 4
+#if DISPLAY_SCANRATE > 4
 		case 4 :
 			wGpio_Temp = DMD_PIN_C;
 			break;
@@ -428,7 +426,7 @@ void dmd_DisplayScan()
 #endif
 	}
 	
-	DMD_PORT->ODR = (DMD_PORT->ODR & DMD_PORT_MASK) | wGpio_Temp;
+	DMD_PIN_PORT->ODR = (DMD_PIN_PORT->ODR & DMD_PORT_MASK) | wGpio_Temp;
 	
 	DMD_LATCH();
 	

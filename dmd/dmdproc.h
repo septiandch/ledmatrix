@@ -9,8 +9,8 @@
 #include "../utils.h"
 #include "../pgmspace.h"
 
-#ifndef	_LEDMATRIX_H_
-#define	_LEDMATRIX_H_
+#ifndef	_DMDPROC_H_
+#define	_DMDPROC_H_
 
 /* #define ENABLE_BUFFER */
 
@@ -88,4 +88,4 @@ extern void			matrix_DrawFilledBox(int16_t x1, int16_t y1, int16_t x2, int16_t y
 unsigned int 		matrix_TextCenter(char *textSource);
 extern int			matrix_ScrollText(const char *text, int delay);
 
-#endif	/** _LEDMATRIX_H_ */
+#endif	/** _DMDPROC_H_ */

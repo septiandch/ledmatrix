@@ -5,7 +5,7 @@
  *  Blog URL    : http://solderingcodes.blogspot.com
  */
 
-#include "ledmatrix/ledmatrix.h"
+#include "dmdproc.h"
 
 /** FUNCTION PROTOTYPES */
 uint16_t matrix_PixelMapping(int16_t nX, int16_t nY);

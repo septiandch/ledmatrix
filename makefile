@@ -1,12 +1,12 @@
 # path to STM32F103 standard peripheral library
-STD_PERIPH_LIBS ?= /home/septiandc/Workspace/ARM/lib/STM32-Library-V3.5
+STD_PERIPH_LIBS ?= /home/septiandc/Workspace/library/STM32-Library-V3.5
 STD_PERIPH_DRIVER ?= $(STD_PERIPH_LIBS)/Libraries/STM32F10x_StdPeriph_Driver/src
 
 # list of source files
 SOURCES  = main.c
 SOURCES += utils.c
-SOURCES += ledmatrix/ledmatrix.c
-SOURCES += ledmatrix/dmdhal.c
+SOURCES += dmd/dmdproc.c
+SOURCES += dmd/dmdhal.c
 SOURCES += peripherals/usart.c
 SOURCES += peripherals/i2c.c
 SOURCES += peripherals/rtc.c

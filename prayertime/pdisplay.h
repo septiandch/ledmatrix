@@ -8,7 +8,7 @@
 #ifndef _PTIME_DISPLAY_H_
 #define _PTIME_DISPLAY_H_
 
-#include "../ledmatrix/ledmatrix.h"
+#include "../dmd/dmdproc.h"
 #include "../peripherals/fmem.h"
 #include "../utils.h"
 #include "prayertime.h"
