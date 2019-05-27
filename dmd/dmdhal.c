@@ -10,7 +10,6 @@
 /* GLOBAL VARIABLES */
 uint8_t dmd_bDisplayBuffer[DISPLAY_SIZE * DISPLAY_MODE];
 uint8_t dmd_bDisplayScan		= 0;
-uint8_t dmd_bDisplayBrightness	= 0;
 
 #ifdef ENABLE_TIM
 uint16_t CCR_Val = 6000;
@@ -175,7 +174,7 @@ void dmd_Init()
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_EN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
 #endif
 
 #if defined(ENABLE_TIM)
@@ -214,7 +213,7 @@ void dmd_Init()
 	
 #else
 	/* Systick Handler */
-	SysTick_Config((SystemCoreClock / 4000) - 1);
+	SysTick_Config(SystemCoreClock / 4000);
 #endif
 }
 
@@ -364,6 +363,15 @@ void dmd_SendData75(uint16_t nBufferHi, uint16_t nBufferLo)
 #endif
 }
 
+void dmd_SetBrightness(uint8_t percentage)
+{
+#ifdef ENABLE_PWM
+	uint16_t value = ((uint16_t)percentage  * PWM_PERIOD) / 100;
+	
+	TIM_SetCompare1(TIM1, value);
+#endif
+}
+
 void dmd_DisplayScan()
 {	    
 #if !defined(ENABLE_DMA) && defined(DMD_HUB12)
@@ -431,14 +439,8 @@ void dmd_DisplayScan()
 	DMD_LATCH();
 	
 	dmd_bDisplayScan++;
-    if(dmd_bDisplayScan >= DISPLAY_SCANRATE)
-    {
+	if(dmd_bDisplayScan >= DISPLAY_SCANRATE)
+	{
 		dmd_bDisplayScan = 0;
-	
-		dmd_bDisplayBrightness++;
-		if(dmd_bDisplayBrightness >= 20)
-		{
-			dmd_bDisplayBrightness = 0;
-		}
 	}
 }

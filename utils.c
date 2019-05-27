@@ -140,3 +140,12 @@ void utils_StringParse(char *str, uint8_t *index)
 	}
 	while(str[i - 1] != '\0');
 }
+
+uint16_t utils_strlen(const char * str)
+{
+    uint16_t i = 0;
+
+    while(str[i++] != '\0');
+
+    return(i);
+}

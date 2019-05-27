@@ -5,9 +5,11 @@
  *  Blog URL    : http://solderingcodes.blogspot.com
  */
 
+#include <stdio.h>
+#include <string.h>
 #include "dmdhal.h"
-#include "../utils.h"
-#include "../pgmspace.h"
+#include "utils.h"
+#include "pgmspace.h"
 
 #ifndef	_DMDPROC_H_
 #define	_DMDPROC_H_
@@ -67,6 +69,8 @@ extern void 		matrix_Init(void);
 	
 extern void 		matrix_SetFont(const uint8_t *font);
 extern void			matrix_SetColor(eCOLOR _color);
+extern void			matrix_SetBrightness(uint8_t percentage);
+
 extern uint16_t		matrix_GetCharWidth(const char letter);
 extern uint16_t		matrix_GetTextCenter(char *textSource);
 	

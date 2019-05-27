@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "stm32f10x.h"
+#include "stm32f10x_conf.h"
 #include "platform_config.h"
-#include "misc.h"
 
 /* PERIPHHERALS CONFIGURATION */
 /* #define DMD_HUB75 */
@@ -20,7 +20,7 @@
 
 /* #define ENABLE_SPI */
 /* #define ENABLE_DMA */
-#define ENABLE_PWM
+/* #define ENABLE_PWM */
 /* #define ENABLE_TIM */
 
 #if defined (DMD_HUB12)
@@ -81,11 +81,11 @@
 #define MODE_RGB					3
 	
 /* DISPLAY PARAMETER */	
-#define DISPLAY_MODE				MODE_RGB	/* 1 = Mono , 2 = Trii-Color, 3 = RGB */
+#define DISPLAY_MODE				MODE_MONO	/* Mono = 1 , Tri = 2, RGB = 3 */
 #define DISPLAY_SCANRATE			4	/* 4 = 1/4 , 8 = 1/8, 16 = 1/16 */
 #define DISPLAY_WIDTH       		32
 #define DISPLAY_HEIGHT      		16
-#define DISPLAY_ACROSS      		5
+#define DISPLAY_ACROSS      		7
 #define DISPLAY_DOWN        		1
 #define DISPLAY_ROWSIZE        		(DISPLAY_WIDTH / 8) /* 1 byte = 8 bit */
 #define DISPLAY_TOTAL       		(DISPLAY_ACROSS * DISPLAY_DOWN)
@@ -99,6 +99,7 @@ extern void		dmd_Init();
 extern void		dmd_DisplayScan();
 extern void		dmd_SendData(uint8_t _data);
 extern void		dmd_SendData75(uint16_t nBufferHi, uint16_t nBufferLo);
+extern void     dmd_SetBrightness(uint8_t percentage);
 
 #endif	/* _DMDHAL_H */
 

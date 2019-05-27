@@ -25,7 +25,7 @@ void matrix_Init(void)
 {
 	/* Initialize Display */
 	dmd_Init();
-	
+
     matrix_ScreenClear(BLACK);
     matrix_PixelMapCreate();
 }
@@ -101,7 +101,7 @@ uint16_t matrix_PixelMapping(int16_t nX, int16_t nY)
 	bytePos = ((uint16_t) (nX / BYTE_SIZE) * DISPLAY_SCANRATE) + matrix_nPixelMap[nY];
 
 #else
-	bytePos = (nY * (DISPLAY_WIDTH / BYTE_SIZE) * DISPLAY_MODE * DISPLAY_ACROSS) + ((nX / BYTE_SIZE) * DISPLAY_MODE);
+	bytePos = (nY * (DISPLAY_WIDTH / 8) * DISPLAY_MODE * DISPLAY_ACROSS) + ((nX / 8) * DISPLAY_MODE);
 #endif
 	
 	return bytePos;
@@ -124,9 +124,9 @@ void matrix_DrawPoint(int16_t nX, int16_t nY, eCOLOR color)
 
 	/* get byte position */
 	bytePos = matrix_PixelMapping(nX, nY);
-	bitPos = nX % BYTE_SIZE;
+	bitPos = nX % 8;
 
-#ifdef DISPLAY_MODE == MODE_RGB
+#if DISPLAY_MODE == MODE_RGB
 	if(color & RED) dmd_bDisplayBuffer[bytePos + 0] |= (1 << bitPos);
 	else dmd_bDisplayBuffer[bytePos + 0] &= ~(1 << bitPos);
 	
@@ -137,7 +137,7 @@ void matrix_DrawPoint(int16_t nX, int16_t nY, eCOLOR color)
 	else dmd_bDisplayBuffer[bytePos + 2] &= ~(1 << bitPos);
 	
 #else
-	if(color == BLACK)
+	if(color != BLACK)
 	{
 		dmd_bDisplayBuffer[bytePos] |= (1 << bitPos);
 	}
@@ -364,7 +364,7 @@ void matrix_DrawString(int16_t nX, int16_t nY, char *bStr, eCOLOR color)
 	uint16_t	i 			= 0;
 	uint16_t	strWidth	= 0;
 	uint16_t	charWide	= 0;
-	int16_t		length		= strlen(bStr);
+	int16_t		length		= utils_strlen(bStr);
 	uint16_t	height		= pgm_read_byte(FONT + FONT_HEIGHT);
 	
 	if (nX >= DISPLAY_ACROSS * DISPLAY_WIDTH || nY >= DISPLAY_DOWN * DISPLAY_HEIGHT) return;
@@ -410,7 +410,7 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 		}
 		else
 		{
-			for(i = 0; i < strlen(bStr); i++)
+			for(i = 0; i < utils_strlen(bStr); i++)
 			{
 				matrix_nMarqueeWidth += matrix_GetCharWidth(bStr[i]);
 				
@@ -488,4 +488,9 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 	}
 	
 	return 0;
+}
+
+void matrix_SetBrightness(uint8_t percentage)
+{
+	dmd_SetBrightness(percentage);
 }
