@@ -98,8 +98,8 @@
 #define DISPLAY_SCANRATE			4	/* 4 = 1/4 , 8 = 1/8, 16 = 1/16 */
 #define DISPLAY_WIDTH       		32
 #define DISPLAY_HEIGHT      		16
-#define DISPLAY_ACROSS      		14
-#define DISPLAY_DOWN        		1
+#define DISPLAY_ACROSS      		7
+#define DISPLAY_DOWN        		2
 #define DISPLAY_ROWSIZE        		(DISPLAY_WIDTH / 8) /* 1 byte = 8 bit */
 #define DISPLAY_TOTAL       		(DISPLAY_ACROSS * DISPLAY_DOWN)
 #define DISPLAY_SIZE        		(DISPLAY_ROWSIZE * DISPLAY_HEIGHT * DISPLAY_TOTAL) /* Size in Bytes */

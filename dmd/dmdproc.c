@@ -99,9 +99,9 @@ uint16_t matrix_PixelMapping(int16_t nX, int16_t nY)
 
 #ifdef ENABLE_DMA
 	bytePos = ((uint16_t) (nX / BYTE_SIZE) * DISPLAY_SCANRATE) + matrix_nPixelMap[nY];
-
 #else
-	bytePos = (nY * (DISPLAY_WIDTH / 8) * DISPLAY_MODE * DISPLAY_ACROSS) + ((nX / 8) * DISPLAY_MODE);
+	bytePos =	((nY % DISPLAY_HEIGHT) * (DISPLAY_WIDTH / 8) * DISPLAY_TOTAL * DISPLAY_MODE) + ((nX / 8) * DISPLAY_MODE)
+				+ (((nY / DISPLAY_HEIGHT) * DISPLAY_ACROSS * (DISPLAY_WIDTH / 8)) * DISPLAY_MODE);
 #endif
 	
 	return bytePos;
