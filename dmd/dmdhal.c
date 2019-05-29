@@ -94,12 +94,15 @@ void dmd_Init()
 	NVIC_Init(&NVIC_InitStructure);
 #endif
 
-#if defined(DMD_HUB12) && defined(ENABLE_PWM)
-	/* TIM2 clock enable */
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
+#if defined(ENABLE_PWM)
+	uint16_t TimerPeriod = (SystemCoreClock / 17570 ) - 1;
+	uint16_t Channel1Pulse = (uint16_t) (((uint32_t) 5 * (TimerPeriod - 1)) / 10);
+
+	/* PWM_TIM clock enable */
+	RCC_APB1PeriphClockCmd(PWM_PERIPH_RCC, ENABLE);
 	
 	/* Alternative Function IO clock enable */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+	RCC_APB2PeriphClockCmd(DMD_GPIO_RCC | PWM_AFIO_RCC, ENABLE);
 	
     /* GPIO pin init for EN */
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_EN;
@@ -107,50 +110,15 @@ void dmd_Init()
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
 	
-	/* Time base configuration */
-	TIM_TimeBaseStructure.TIM_Period = PWM_PERIOD;
-	TIM_TimeBaseStructure.TIM_Prescaler = (uint16_t)(SystemCoreClock / 24000000) - 1;
-	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
-	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInit(TIM2, &TIM_TimeBaseStructure);
-	
-	/* PWM1 Mode configuration: Channel4 */
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
-	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-	TIM_OCInitStructure.TIM_Pulse = PWM_START_VAL;
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-	TIM_OC4Init(TIM2, &TIM_OCInitStructure);
-	
-	TIM_OC4PreloadConfig(TIM2, TIM_OCPreload_Enable);
-	
-	TIM_ARRPreloadConfig(TIM2, ENABLE);
-	
-	/* TIM2 enable counter */
-	TIM_Cmd(TIM2, ENABLE);
-
-#elif defined(DMD_HUB75) && defined(ENABLE_PWM)
-
-	uint16_t TimerPeriod = (SystemCoreClock / 17570 ) - 1;
-	uint16_t Channel1Pulse = (uint16_t) (((uint32_t) 5 * (TimerPeriod - 1)) / 10);
-
-	/* TIM1 clock & Alternative Function IO clock enable */
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1 | RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);
-	
-    /* GPIO pin init for EN */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	
 	/* Time Base configuration */
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 	TIM_TimeBaseStructure.TIM_Period = TimerPeriod;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(PWM_TIM, &TIM_TimeBaseStructure);
 	
-	/* Channel 1, 2,3 and 4 Configuration in PWM mode */
+	/* Channel 4 Configuration in PWM mode */
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
@@ -159,15 +127,15 @@ void dmd_Init()
 	TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;
 	TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
 	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset;
-	TIM_OC1Init(TIM1, &TIM_OCInitStructure);
+	TIM_OCChInit(PWM_TIM, &TIM_OCInitStructure);
 	
-	TIM_OC1PreloadConfig(TIM1, TIM_OCPreload_Enable);
+	TIM_OCChPreloadConf(PWM_TIM, TIM_OCPreload_Enable);
 	
-	/* TIM1 counter enable */
-	TIM_Cmd(TIM1, ENABLE);
+	/* PWM_TIM counter enable */
+	TIM_Cmd(PWM_TIM, ENABLE);
 	
-	/* TIM1 Main Output Enable */
-	TIM_CtrlPWMOutputs(TIM1, ENABLE);
+	/* PWM_TIM Main Output Enable */
+	TIM_CtrlPWMOutputs(PWM_TIM, ENABLE);
 
 #else
     /* GPIO pin init for EN */
@@ -204,7 +172,7 @@ void dmd_Init()
 	/* TIM1 counter enable */
 	TIM_Cmd(TIM3, ENABLE);
 	
-	/* Enable the TIM2 global Interrupt */
+	/* Enable the PWM_TIM global Interrupt */
 	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
@@ -213,7 +181,7 @@ void dmd_Init()
 	
 #else
 	/* Systick Handler */
-	SysTick_Config(SystemCoreClock / 4000);
+	SysTick_Config(SystemCoreClock / 1000);
 #endif
 }
 
@@ -366,9 +334,9 @@ void dmd_SendData75(uint16_t nBufferHi, uint16_t nBufferLo)
 void dmd_SetBrightness(uint8_t percentage)
 {
 #ifdef ENABLE_PWM
-	uint16_t value = ((uint16_t)percentage  * PWM_PERIOD) / 100;
+	uint16_t value = ((uint16_t)(100 - percentage)  * PWM_PERIOD) / 100;
 	
-	TIM_SetCompare1(TIM1, value);
+	TIM_SetCompare4(PWM_TIM, value);
 #endif
 }
 

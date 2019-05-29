@@ -28,9 +28,11 @@ int main(void)
 
 	matrix_SetFont(System5x7);
 
+	matrix_SetBrightness(1);
+
 	while(1)
 	{
 		utils_Delay(5);
-		matrix_DrawMarquee(0, 0, 32*7, 16, "TESTING BISMILLAAH SUBHANALLAH MASYAALLAH ALLAHUAKBAR ALHAMDULILLAAH", SCROLL_RIGHT_TO_LEFT, RED);
+		matrix_DrawMarquee(0, 0, 32*14, 16, "TESTING BISMILLAAH SUBHANALLAH MASYAALLAH ALLAHUAKBAR ALHAMDULILLAAH", SCROLL_RIGHT_TO_LEFT, RED);
 	}
 }

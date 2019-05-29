@@ -20,7 +20,7 @@
 
 /* #define ENABLE_SPI */
 /* #define ENABLE_DMA */
-/* #define ENABLE_PWM */
+#define ENABLE_PWM
 /* #define ENABLE_TIM */
 
 #if defined (DMD_HUB12)
@@ -61,6 +61,19 @@
 #endif
 
 #ifdef	ENABLE_PWM
+#   if defined(DMD_HUB75)
+#       define PWM_PERIPH_RCC       RCC_APB2Periph_TIM1
+#		define PWM_AFIO_RCC			RCC_APB2Periph_AFIO
+#       define PWM_TIM              TIM1
+#       define TIM_OCChInit         TIM_OC1Init
+#       define TIM_OCChPreloadConf  TIM_OC1PreloadConfig
+#   elif defined(DMD_HUB12)
+#       define PWM_PERIPH_RCC       RCC_APB1Periph_TIM2
+#		define PWM_AFIO_RCC			RCC_APB2Periph_AFIO
+#       define PWM_TIM              TIM2
+#       define TIM_OCChPreloadConf  TIM_OC4PreloadConfig
+#       define TIM_OCChInit         TIM_OC4Init
+#   endif
 #	define PWM_PERIOD				(SystemCoreClock / 17570 ) - 1
 #	define PWM_START_VAL			100
 #endif
@@ -85,7 +98,7 @@
 #define DISPLAY_SCANRATE			4	/* 4 = 1/4 , 8 = 1/8, 16 = 1/16 */
 #define DISPLAY_WIDTH       		32
 #define DISPLAY_HEIGHT      		16
-#define DISPLAY_ACROSS      		7
+#define DISPLAY_ACROSS      		14
 #define DISPLAY_DOWN        		1
 #define DISPLAY_ROWSIZE        		(DISPLAY_WIDTH / 8) /* 1 byte = 8 bit */
 #define DISPLAY_TOTAL       		(DISPLAY_ACROSS * DISPLAY_DOWN)
