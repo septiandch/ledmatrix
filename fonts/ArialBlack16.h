@@ -45,7 +45,7 @@
 #define ARIAL_BLACK_16_WIDTH 10
 #define ARIAL_BLACK_16_HEIGHT 16
 
-static const unsigned char Arial16[] PROGMEM = {
+static const unsigned char ArialBlack16[] PROGMEM = {
     0x64, 0x36, // size
     0x0A, // width
     0x10, // height

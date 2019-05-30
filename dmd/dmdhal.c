@@ -9,7 +9,7 @@
 
 /* GLOBAL VARIABLES */
 uint8_t dmd_bDisplayBuffer[DISPLAY_SIZE * DISPLAY_MODE];
-uint8_t dmd_bDisplayScan		= 0;
+uint8_t dmd_bDisplayScan	= 0;
 
 #ifdef ENABLE_TIM
 uint16_t CCR_Val = 6000;
@@ -23,46 +23,63 @@ void dmd_Init()
 	NVIC_InitTypeDef		NVIC_InitStructure;
     SPI_InitTypeDef			SPI_InitStructure;
     
-#if defined(DMD_HUB12) && defined(ENABLE_SPI)
-	/*  SPI RCC */
+#if defined(DMD_HUB12)
+	/*  GPIO RCC */
+	RCC_APB2PeriphClockCmd(DMD_GPIO_RCC, ENABLE);
+
+#	if defined(ENABLE_SPI)
+	/*  GPIO & SPI RCC */
     RCC_APB2PeriphClockCmd(DMD_SPI_RCC, ENABLE);
 	
+	/* Alternative Function IO clock enable */
+	RCC_APB2PeriphClockCmd(PWM_AFIO_RCC, ENABLE);
+	
     /* Initialize GPIO pins for MOSI, MISO, and SCK (Alternate Mode) */
-	GPIO_InitStructure.GPIO_Pin = PIN_CLK | PIN_DAT;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin		= DMD_PIN_CLK | DMD_PIN_DAT;
+	GPIO_InitStructure.GPIO_Speed	= GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode	= GPIO_Mode_AF_PP;
+	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
     
     /* GPIO pin for EN, SS (LAT) & A, B (Output Mode) */
-	GPIO_InitStructure.GPIO_Pin = PIN_EN | PIN_LAT | PIN_A | PIN_B;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin		= DMD_PIN_LAT | DMD_PIN_A | DMD_PIN_B;
+	GPIO_InitStructure.GPIO_Speed	= GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode	= GPIO_Mode_Out_PP;
+	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
     
     /* Initialize SPI */
-	SPI_InitStructure.SPI_Direction = SPI_Direction_1Line_Tx;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_Low;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_1Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Hard;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_8;
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_LSB;
-	SPI_InitStructure.SPI_CRCPolynomial = 0;
+	SPI_InitStructure.SPI_Direction			= SPI_Direction_1Line_Tx;
+	SPI_InitStructure.SPI_Mode				= SPI_Mode_Master;
+	SPI_InitStructure.SPI_DataSize			= SPI_DataSize_8b;
+	SPI_InitStructure.SPI_CPOL				= SPI_CPOL_Low;
+	SPI_InitStructure.SPI_CPHA				= SPI_CPHA_1Edge;
+	SPI_InitStructure.SPI_NSS				= SPI_NSS_Hard;
+	SPI_InitStructure.SPI_BaudRatePrescaler	= SPI_BaudRatePrescaler_8;
+	SPI_InitStructure.SPI_FirstBit			= SPI_FirstBit_LSB;
+	SPI_InitStructure.SPI_CRCPolynomial		= 0;
 	SPI_Init(DMD_SPI, &SPI_InitStructure);
 	
 	/* Enable SPI */
 	SPI_Cmd(DMD_SPI, ENABLE);
-	
-#elif defined(DMD_HUB12)    
-	/*  GPIO RCC */
-	RCC_APB2PeriphClockCmd(DMD_GPIO_RCC, ENABLE);
-    
+
+#	else
     /* GPIO pin init for DAT, CLK, SS (LAT) & A, B (Output Mode) */
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_CLK | DMD_PIN_DAT | DMD_PIN_LAT | DMD_PIN_A | DMD_PIN_B;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
+#	endif
+
+#	if defined(ENABLE_DMA)
+	/*  DMA RCC */
+	RCC_AHBPeriphClockCmd(SPI_MASTER_DMA_CLK, ENABLE);
+	
+	/* Enable DMA1 channel IRQ Channel */
+	NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+#	endif
 
 #elif defined(DMD_HUB75)
 	/*  GPIO RCC */
@@ -82,27 +99,15 @@ void dmd_Init()
 	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
 #endif
 
-#if defined(DMD_HUB12) && defined(ENABLE_DMA)
-	/*  DMA RCC */
-	RCC_AHBPeriphClockCmd(SPI_MASTER_DMA_CLK, ENABLE);
-	
-	/* Enable DMA1 channel IRQ Channel */
-	NVIC_InitStructure.NVIC_IRQChannel = DMA1_Channel3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x01;
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;
-	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
-#endif
-
 #if defined(ENABLE_PWM)
 	uint16_t TimerPeriod = (SystemCoreClock / 17570 ) - 1;
 	uint16_t Channel1Pulse = (uint16_t) (((uint32_t) 5 * (TimerPeriod - 1)) / 10);
 
 	/* PWM_TIM clock enable */
-	RCC_APB1PeriphClockCmd(PWM_PERIPH_RCC, ENABLE);
+	RCC_APB1PeriphClockCmd(PWM_TIM_RCC, ENABLE);
 	
 	/* Alternative Function IO clock enable */
-	RCC_APB2PeriphClockCmd(DMD_GPIO_RCC | PWM_AFIO_RCC, ENABLE);
+	RCC_APB2PeriphClockCmd(PWM_AFIO_RCC, ENABLE);
 	
     /* GPIO pin init for EN */
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_EN;
@@ -118,7 +123,7 @@ void dmd_Init()
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
 	TIM_TimeBaseInit(PWM_TIM, &TIM_TimeBaseStructure);
 	
-	/* Channel 4 Configuration in PWM mode */
+	/* Channel x Configuration in PWM mode */
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
@@ -127,9 +132,9 @@ void dmd_Init()
 	TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_High;
 	TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
 	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset;
-	TIM_OCChInit(PWM_TIM, &TIM_OCInitStructure);
+	PWM_OCChInit(PWM_TIM, &TIM_OCInitStructure);
 	
-	TIM_OCChPreloadConf(PWM_TIM, TIM_OCPreload_Enable);
+	PWM_OCChPreloadConf(PWM_TIM, TIM_OCPreload_Enable);
 	
 	/* PWM_TIM counter enable */
 	TIM_Cmd(PWM_TIM, ENABLE);
@@ -146,42 +151,31 @@ void dmd_Init()
 #endif
 
 #if defined(ENABLE_TIM)
-	/* TIM3 clock enable */
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+	/* TIM clock enable */
+	RCC_APB1PeriphClockCmd(TIMx_RCC, ENABLE);
 	
 	/* Time base configuration */
 	TIM_TimeBaseStructure.TIM_Period = 65535;
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
-	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
+	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseStructure);
-	
-	/* Prescaler configuration */
-	TIM_PrescalerConfig(TIM3, (uint16_t)(SystemCoreClock / 6000000) - 1, TIM_PSCReloadMode_Immediate);
-	
-	/* Output Compare Timing Mode configuration: Channel1 */
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Timing;
-	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Disable;
-	TIM_OCInitStructure.TIM_Pulse = CCR_Val;
-	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-	
-	TIM_OC1Init(TIM3, &TIM_OCInitStructure);
-	TIM_OC1PreloadConfig(TIM3, TIM_OCPreload_Disable);
-	TIM_ITConfig(TIM3, TIM_IT_CC1, ENABLE);
-	
-	/* TIM1 counter enable */
-	TIM_Cmd(TIM3, ENABLE);
-	
-	/* Enable the PWM_TIM global Interrupt */
-	NVIC_InitStructure.NVIC_IRQChannel = TIM3_IRQn;
+	TIM_TimeBaseInit(TIMx, &TIM_TimeBaseStructure);
+
+	/* Enable the TIM global Interrupt */
+	NVIC_InitStructure.NVIC_IRQChannel = TIMx_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x00;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 	
+	/* TIM Interrupt enable */
+	TIM_ITConfig(TIMx, TIM_IT_Update, ENABLE);
+	
+	/* TIM counter enable */
+	TIM_Cmd(TIMx, ENABLE);
 #else
 	/* Systick Handler */
-	SysTick_Config(SystemCoreClock / 1000);
+	SysTick_Config((SystemCoreClock / 1000) - 1);
 #endif
 }
 
@@ -252,33 +246,32 @@ void SysTick_Handler(void)
 #endif
 }
 
-void TIM3_IRQHandler(void)
+void TIMx_IRQHandler(void)
 {
 #ifdef ENABLE_TIM
-  if(TIM_GetITStatus(TIM3, TIM_IT_CC1) != RESET)
-  {
-	TIM_Cmd(TIM3, DISABLE);
-    TIM_ClearITPendingBit(TIM3, TIM_IT_CC1);
+ 	if(TIM_GetITStatus(TIMx, TIM_IT_Update) != RESET)
+	{
+    	TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
 
 #	if defined(ENABLE_DMA) && defined(DMD_HUB12)
-	uint32_t offset = (DISPLAY_WIDTH / BYTE_SIZE) * DISPLAY_TOTAL * DISPLAY_SCANRATE;
+		uint32_t offset = (DISPLAY_WIDTH / BYTE_SIZE) * DISPLAY_TOTAL * DISPLAY_SCANRATE;
 
-	dmd_DMAStart(&dmd_bDisplayBuffer[offset * dmd_bDisplayScan], offset);
+		dmd_DMAStart(&dmd_bDisplayBuffer[offset * dmd_bDisplayScan], offset);
 	
 #	else
-	dmd_DisplayScan();
+		dmd_DisplayScan();
 #	endif
-  }
+	}
 #endif
 }
 
 void dmd_SendData(uint8_t data)
 {	
 #if defined(ENABLE_SPI) && defined(DMD_HUB12)
-	SPI_I2S_SendData(HUB_SPI, data);
+	SPI_I2S_SendData(DMD_SPI, data);
 	
 	/* Wait for SPI Transfer End */
-    while (SPI_I2S_GetFlagStatus(HUB_SPI, SPI_I2S_FLAG_TXE) == RESET);
+    while (SPI_I2S_GetFlagStatus(DMD_SPI, SPI_I2S_FLAG_TXE) == RESET);
     
 #elif defined(DMD_HUB12)
 	int 	i = 0;
@@ -336,7 +329,7 @@ void dmd_SetBrightness(uint8_t percentage)
 #ifdef ENABLE_PWM
 	uint16_t value = ((uint16_t)(100 - percentage)  * PWM_PERIOD) / 100;
 	
-	TIM_SetCompare4(PWM_TIM, value);
+	PWM_SetCompare(PWM_TIM, value);
 #endif
 }
 
@@ -405,7 +398,7 @@ void dmd_DisplayScan()
 	DMD_PIN_PORT->ODR = (DMD_PIN_PORT->ODR & DMD_PORT_MASK) | wGpio_Temp;
 	
 	DMD_LATCH();
-	
+
 	dmd_bDisplayScan++;
 	if(dmd_bDisplayScan >= DISPLAY_SCANRATE)
 	{

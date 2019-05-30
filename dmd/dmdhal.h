@@ -8,8 +8,6 @@
 #ifndef _DMDHAL_H_
 #define _DMDHAL_H_
 
-#include <stdlib.h>
-#include <string.h>
 #include "stm32f10x.h"
 #include "stm32f10x_conf.h"
 #include "platform_config.h"
@@ -18,14 +16,14 @@
 /* #define DMD_HUB75 */
 #define DMD_HUB12
 
+#define ENABLE_PWM
+#define ENABLE_TIM
 /* #define ENABLE_SPI */
 /* #define ENABLE_DMA */
-#define ENABLE_PWM
-/* #define ENABLE_TIM */
 
 #if defined (DMD_HUB12)
-#	define DMD_GPIO_RCC				RCC_APB2Periph_GPIOA
 #	define DMD_PIN_PORT				GPIOA
+#	define DMD_GPIO_RCC				RCC_APB2Periph_GPIOA
 
 #	define DMD_PIN_CLK				GPIO_Pin_5
 #	define DMD_PIN_LAT				GPIO_Pin_6
@@ -36,10 +34,15 @@
 
 #	define DMD_PORT_MASK			(0xFFFFFFFF & ~(DMD_PIN_A | DMD_PIN_B))
 
+#   if defined(ENABLE_SPI)
+#       define DMD_SPI              SPI1
+#       define DMD_SPI_RCC			RCC_APB2Periph_SPI1
+#   endif
+
 #elif defined (DMD_HUB75)
+#	define DMD_PORT_DAT				GPIOA
 #	define DMD_GPIO_RCC				RCC_APB2Periph_GPIOA
 #	define DMD_GPIO_SCN_RCC			RCC_APB2Periph_GPIOB
-#	define DMD_PORT_DAT				GPIOA
 
 #	define DMD_PIN_R1     			GPIO_Pin_0
 #	define DMD_PIN_G1     			GPIO_Pin_1
@@ -62,20 +65,30 @@
 
 #ifdef	ENABLE_PWM
 #   if defined(DMD_HUB75)
-#       define PWM_PERIPH_RCC       RCC_APB2Periph_TIM1
-#		define PWM_AFIO_RCC			RCC_APB2Periph_AFIO
 #       define PWM_TIM              TIM1
-#       define TIM_OCChInit         TIM_OC1Init
-#       define TIM_OCChPreloadConf  TIM_OC1PreloadConfig
-#   elif defined(DMD_HUB12)
-#       define PWM_PERIPH_RCC       RCC_APB1Periph_TIM2
+#       define PWM_TIM_RCC  	    RCC_APB2Periph_TIM1
 #		define PWM_AFIO_RCC			RCC_APB2Periph_AFIO
+#       define PWM_OCChInit         TIM_OC1Init
+#       define PWM_OCChPreloadConf  TIM_OC1PreloadConfig
+#		define PWM_SetCompare		TIM_SetCompare4
+#   elif defined(DMD_HUB12)
 #       define PWM_TIM              TIM2
-#       define TIM_OCChPreloadConf  TIM_OC4PreloadConfig
-#       define TIM_OCChInit         TIM_OC4Init
+#       define PWM_TIM_RCC   	    RCC_APB1Periph_TIM2
+#		define PWM_AFIO_RCC			RCC_APB2Periph_AFIO
+#       define PWM_OCChPreloadConf  TIM_OC4PreloadConfig
+#       define PWM_OCChInit         TIM_OC4Init
+#		define PWM_SetCompare		TIM_SetCompare4
 #   endif
+
 #	define PWM_PERIOD				(SystemCoreClock / 17570 ) - 1
 #	define PWM_START_VAL			100
+#endif
+
+#ifdef ENABLE_TIM
+#	define TIMx							TIM3
+#	define TIMx_RCC						RCC_APB1Periph_TIM3
+#	define TIMx_IRQn					TIM3_IRQn
+#	define TIMx_IRQHandler				TIM3_IRQHandler
 #endif
 
 /* DISPLAY MACROS */
