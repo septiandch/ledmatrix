@@ -37,7 +37,7 @@
  */
 
 #include <inttypes.h>
-#include <avr/pgmspace.h>
+#include "pgmspace.h"
 
 #ifndef CENTURY38_H
 #define CENTURY38_H

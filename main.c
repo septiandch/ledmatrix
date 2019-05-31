@@ -10,8 +10,11 @@
 #include "dmd/dmdproc.h"
 #include "fonts/SystemFont.h"
 #include "fonts/ArialBlack16.h"
+#include "appli/movingsign/app_main.h"
 
 /* GLOBAL VARIABLES */
+char text1[] = "SELAMAT DATANG DI";
+char text2[] = "MASJID AL-IKHLAS";
 
 /* FUNCTION PROTOTYPES */
 
@@ -20,22 +23,11 @@
 /* MAIN FUNCTION */
 int main(void)
 {	
-	/* Startup Delay */
-	utils_Delay(300);
-	matrix_Init();
-	
-	matrix_SetBrightness(10);
-	utils_Delay(10);
-
-	matrix_SetFont(ArialBlack16);
-
-	matrix_SetBrightness(1);
-
-	matrix_DrawString(0, 0, "TOTAL INFAQ BULAN MEI 2019", RED);
+	app_Init();
 
 	while(1)
 	{
-		matrix_DrawMarquee(0, 16, 32*7, 16, "Rp. 52.754.000", SCROLL_RIGHT_TO_LEFT, RED);
+		app_SetMode(MODE_BIGMESSAGE, "SELAMAT DATANG DI\rMASJID AL-IKHLAS");
 		utils_Delay(10);
 	}
 }

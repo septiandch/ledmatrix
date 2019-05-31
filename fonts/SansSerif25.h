@@ -37,7 +37,7 @@
  */
 
 #include <inttypes.h>
-#include <avr/pgmspace.h>
+#include "pgmspace.h"
 
 #ifndef SANSSERIF25_H
 #define SANSSERIF25_H

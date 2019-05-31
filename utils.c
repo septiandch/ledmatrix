@@ -126,19 +126,21 @@ uint8_t utils_Timestamp(uint16_t n1, uint16_t n2, uint16_t n3, char delimiter, c
 	return index;
 }
 
-void utils_StringParse(char *str, uint8_t *index)
+void utils_StringParse(char delimiter, char *strtarget, uint8_t *outputindex)
 {
-	uint8_t	i = 0;
-			
-	do
+	int8_t	i		= 0;
+	int8_t	index	= 0;
+	
+	while(strtarget[index] != '\0')
 	{
-		if(str[i] == ',')
+		if(strtarget[index] == delimiter)
 		{
-			index[i] = i + 1;
+			outputindex[i] = index + 1;
 			i++;
 		}
+
+		index++;
 	}
-	while(str[i - 1] != '\0');
 }
 
 uint16_t utils_strlen(const char * str)
