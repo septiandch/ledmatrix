@@ -37,6 +37,7 @@
 #   if defined(ENABLE_SPI)
 #       define DMD_SPI              SPI1
 #       define DMD_SPI_RCC			RCC_APB2Periph_SPI1
+#		define DMD_SPI_AFIO_RCC		RCC_APB2Periph_AFIO
 #   endif
 
 #elif defined (DMD_HUB75)

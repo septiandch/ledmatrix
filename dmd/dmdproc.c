@@ -7,15 +7,15 @@
 
 #include "dmdproc.h"
 
-/** FUNCTION PROTOTYPES */
+/* FUNCTION PROTOTYPES */
 uint16_t matrix_PixelMapping(int16_t nX, int16_t nY);
 void matrix_PixelMapCreate(void);
 
-/** Initialize Global Variables */
-const uint8_t	*FONT;
-stMatrixFrame	matrix_stDisplayFrame;
-int16_t			matrix_nMarqueeWidth = 0;
-int16_t			matrix_nMarqueePos = 0;
+/* Initialize Global Variables */
+const uint8_t	*FONT					;
+stMatrixFrame	matrix_stDisplayFrame	;
+int16_t			matrix_nMarqueeWidth	= 0;
+int16_t			matrix_nMarqueePos		= 0;
 	
 #ifdef ENABLE_DMA
 static uint16_t		matrix_nPixelMap[MATRIX_SIZE];
@@ -348,12 +348,12 @@ uint16_t matrix_GetTextCenter(char *textSource)
   uint8_t	width	= 0;
   uint16_t	x		= 0;
     
-  for(x = 0; x < strlen(textSource); x++)
+  for(x = 0; x < utils_strlen(textSource); x++)
   {
+ 	width += matrix_GetCharWidth(textSource[x]);
+
 	/* Line gap +1 */
 	width++;
-  
-    width += matrix_GetCharWidth(textSource[x]);
   }
 
   return ((int16_t)(DISPLAY_ACROSS * DISPLAY_WIDTH)/2) - (int16_t)(width/2);
@@ -488,6 +488,42 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 	}
 	
 	return 0;
+}
+
+void matrtix_DrawImage(uint16_t posX, uint16_t posY, uint8_t *data)
+{
+	/* Initialize Local Variables */
+	uint8_t 	vpos		= 0;
+	uint8_t 	hpos		= 0;
+	uint8_t 	bitval		= 0;
+	uint8_t 	bitpos		= 0;
+	int16_t		bytepos		= 0;
+	int16_t		img_width	= pgm_read_byte(data + 0);
+	int16_t		img_height	= pgm_read_byte(data + 1);
+
+	for(vpos = 0; vpos < 32; vpos++)
+	{
+		for(bytepos = (vpos * 4); bytepos < ((vpos * 4) + 4); bytepos++)
+		{
+			bitval = pgm_read_byte(data + bytepos + 2);
+
+			for(bitpos = 0; bitpos < 8; bitpos++)
+			{
+				if(bitval & 0x01)
+        		{
+					matrix_DrawPoint(posX + hpos + bitpos, posY + vpos, RED);
+				}
+        		else
+        		{
+					matrix_DrawPoint(posX + hpos + bitpos, posY + vpos, BLACK);
+				}
+
+        		bitval >>= 1;
+			}
+			hpos += 8;
+		}
+		hpos = 0;
+	}
 }
 
 void matrix_SetBrightness(uint8_t percentage)
