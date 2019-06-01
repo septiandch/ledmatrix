@@ -14,7 +14,7 @@
 #ifndef	_DMDPROC_H_
 #define	_DMDPROC_H_
 
-/* #define ENABLE_BUFFER */
+#define ENABLE_DOUBLEBUFFER
 
 /** Font Indices */
 #define	FONT_LENGTH             0
@@ -28,14 +28,20 @@
 #	define MATRIX_SIZE				DISPLAY_DOWN * DISPLAY_HEIGHT * DISPLAY_MODE
 #endif
 
+#ifdef ENABLE_DOUBLEBUFFER
+#	define bDisplayBuffer	matrix_bDisplayBuffer
+#else
+#	define bDisplayBuffer	dmd_bDisplayBuffer
+#endif
+
 /** STRUCTURES */
 typedef struct
 {
-	uint8_t		active;
-	int16_t		startX;
-	int16_t		startY;
-	int16_t		endX;
-	int16_t		endY;
+	FunctionalState	active;
+	int16_t			startX;
+	int16_t			startY;
+	int16_t			endX;
+	int16_t			endY;
 } stMatrixFrame;
 
 /** ENUMERATIONS */
@@ -74,6 +80,8 @@ extern void			matrix_SetBrightness(uint8_t percentage);
 extern uint16_t		matrix_GetCharWidth(const char letter);
 extern uint16_t		matrix_GetTextCenter(char *textSource);
 	
+extern void			matrix_invert_color(FunctionalState state);
+
 extern void			matrix_FrameCreate(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height);
 extern void			matrix_FrameClear(void);
 	

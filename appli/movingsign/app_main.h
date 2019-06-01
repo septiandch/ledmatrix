@@ -1,5 +1,5 @@
 /**
- *  Prayer Time Display Modes Library
+ *  Moving Sign Display application
  *  Written By  : Septian D. Chandra
  *  E-mail      : septian.d.chandra@gmail.com
  *  Blog URL    : http://solderingcodes.blogspot.com
@@ -15,8 +15,10 @@
 #include "pgmspace.h"
 #include "fonts/SystemFont.h"
 #include "fonts/ArialBlack16.h"
+#include "fonts/Unispace18.h"
 #include "fonts/SansSerif25.h"
-#include "img/icon.h"
+#include "img/logo_masjid.h"
+#include "img/doa_masjid.h"
 
 /* DEFINITIONS */
 #define PARAM_MAX_TASK				5
@@ -27,10 +29,6 @@
 #define MEM_PWRSAVE_MINUTE			(uint8_t)	(MEM_BASE + 0x01)
 #define MEM_PWRSAVE_DURATION		(uint16_t)	(MEM_BASE + 0x02)
 #define MEM_BRIGHTNESS				(uint8_t)	(MEM_BASE + 0x04)
-
-#define BUZZER_GPIO_RCC				RCC_APB2Periph_GPIOB
-#define BUZZER_GPIO					GPIOB
-#define BUZZER_PIN					GPIO_Pin_0
 
 /* ENUMERATION */
 typedef enum
@@ -50,7 +48,8 @@ typedef enum
 	MODE_POWERSAVE = 0,
 	MODE_WELCOME,
 	MODE_BIGMESSAGE,
-	MODE_TITLEDMESSAGE,
+	MODE_DOAMESSAGE,
+	MODE_LONGMESSAGE,
 	MODE_DATETIME,
 	MODE_BLANK
 } eDisplayMode;
@@ -87,8 +86,8 @@ extern stRealTime		stRTime;
 extern stPowerSave		stPwrSave;
 
 /* Function Prototypes */
-extern void		app_Init(void);
-extern void		app_SetMode(eDisplayMode mode, char *message);
-extern void		app_GetParam(uint8_t addr, char *_str, uint8_t *_mode, uint8_t *_delay, uint8_t *_iteration);
+extern void		app_init(void);
+extern void		app_set_mode(eDisplayMode mode, char *message);
+extern void		app_get_param(uint8_t addr, char *_str, uint8_t *_mode, uint8_t *_delay, uint8_t *_iteration);
 
 #endif /* _APP_MAIN_H_ */

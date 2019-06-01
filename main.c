@@ -13,8 +13,6 @@
 #include "appli/movingsign/app_main.h"
 
 /* GLOBAL VARIABLES */
-char text1[] = "SELAMAT DATANG DI";
-char text2[] = "MASJID AL-IKHLAS";
 
 /* FUNCTION PROTOTYPES */
 
@@ -23,11 +21,14 @@ char text2[] = "MASJID AL-IKHLAS";
 /* MAIN FUNCTION */
 int main(void)
 {	
-	app_Init();
+	app_init();
+
 
 	while(1)
 	{
-		app_SetMode(MODE_BIGMESSAGE, "SELAMAT DATANG DI\rMASJID AL-IKHLAS");
-		utils_Delay(10);
+		app_set_mode(MODE_DOAMESSAGE, "DO'A MEMASUKI MASJID");
+		utils_Delay(1000);
+		app_set_mode(MODE_WELCOME, "SELAMAT DATANG DI\rMASJID AL-IKHLAS");
+		utils_Delay(1000);
 	}
 }
