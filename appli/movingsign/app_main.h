@@ -11,14 +11,18 @@
 #include "dmd/dmdproc.h"
 #include "peripherals/fmem.h"
 #include "peripherals/rtc.h"
+#include "peripherals/usart.h"
 #include "utils.h"
 #include "pgmspace.h"
 #include "fonts/SystemFont.h"
 #include "fonts/ArialBlack16.h"
 #include "fonts/Unispace18.h"
-#include "fonts/SansSerif25.h"
+#include "fonts/MonoFonto16.h"
+#include "fonts/Verdana25.h"
 #include "img/logo_masjid.h"
 #include "img/doa_masjid.h"
+#include "app_hal.h"
+#include "app_cmd.h"
 
 /* DEFINITIONS */
 #define PARAM_MAX_TASK				5
@@ -37,22 +41,29 @@ typedef enum
 	PARAM_OK
 } eParamStatus;
 
+typedef enum
+{
+	MODE_POWERSAVE = 0,
+	MODE_WELCOMEMESSAGE,
+	MODE_BIGMESSAGE,
+	MODE_DOAMESSAGE,
+	MODE_TITLEDMESSAGE,
+	MODE_REPORTMESSAGE,
+	MODE_BLANK
+} eDisplayMode;
+
+typedef enum
+{
+	WORKING = 0,
+	FINISHED
+} eTaskStatus;
+
+/* STRUCTURES */
 typedef struct
 {
 	uint8_t			hour;
 	uint8_t			minute;
 } stPrayerTime;
-
-typedef enum
-{
-	MODE_POWERSAVE = 0,
-	MODE_WELCOME,
-	MODE_BIGMESSAGE,
-	MODE_DOAMESSAGE,
-	MODE_LONGMESSAGE,
-	MODE_DATETIME,
-	MODE_BLANK
-} eDisplayMode;
 
 typedef enum
 {
@@ -86,8 +97,7 @@ extern stRealTime		stRTime;
 extern stPowerSave		stPwrSave;
 
 /* Function Prototypes */
-extern void		app_init(void);
-extern void		app_set_mode(eDisplayMode mode, char *message);
-extern void		app_get_param(uint8_t addr, char *_str, uint8_t *_mode, uint8_t *_delay, uint8_t *_iteration);
+extern void			app_init(void);
+extern eTaskStatus	app_set_mode(eDisplayMode mode, char *message);
 
 #endif /* _APP_MAIN_H_ */

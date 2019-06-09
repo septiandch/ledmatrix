@@ -98,6 +98,9 @@ extern void			matrix_DrawBox(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCO
 extern void			matrix_DrawFilledBox(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color);
 extern void			matrtix_DrawImage(uint16_t posX, uint16_t posY, uint8_t *data);
 
+extern void			matrix_PauseMarquee(FunctionalState state);
+extern uint16_t		matrix_GetMarqueePos(void);
+
 unsigned int 		matrix_TextCenter(char *textSource);
 extern int			matrix_ScrollText(const char *text, int delay);
 

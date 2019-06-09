@@ -9,6 +9,7 @@
 #define _USART_H_
 
 #include "stm32f10x.h"
+#include "utils.h"
 
 #define USARTx				USART1
 #define USARTx_IRQn			USART1_IRQn
@@ -26,11 +27,11 @@ extern volatile char		usart_sMessage[MESSAGE_MAX_LEN];
 extern volatile uint8_t		usart_nIndex;
 
 /* FUNCTION PROTOTYPES */
-extern void	usart_Init(const uint16_t baudrate);
+extern void	usart_init(const uint16_t baudrate);
 extern void	usart_putc(char chr);
 extern void	usart_puts(char *str);
 extern void	usart_puti(uint32_t x);
-extern void usart_ClearMessage(void);
-extern char usart_GetLastChar(void);
+extern void usart_message_clear(void);
+extern char usart_get_lastchar(void);
 
 #endif	/* _DMD_HUB_H */

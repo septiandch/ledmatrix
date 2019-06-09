@@ -9,6 +9,7 @@ SOURCES += dmd/dmdproc.c
 SOURCES += dmd/dmdhal.c
 SOURCES += appli/movingsign/app_main.c
 SOURCES += appli/movingsign/app_hal.c
+SOURCES += appli/movingsign/app_cmd.c
 SOURCES += peripherals/usart.c
 SOURCES += peripherals/i2c.c
 SOURCES += peripherals/rtc.c

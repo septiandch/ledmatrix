@@ -17,6 +17,7 @@ stMatrixFrame		matrix_stDisplayFrame	;
 FunctionalState		matrix_bInvertEn		= DISABLE;
 int16_t				matrix_nMarqueeWidth	= 0;
 int16_t				matrix_nMarqueePos		= 0;
+uint8_t				matrix_bMarqueePause	= 0;
 
 #ifdef ENABLE_DMA
 static uint16_t		matrix_nPixelMap[MATRIX_SIZE];
@@ -52,8 +53,8 @@ void matrix_ScreenClear(eCOLOR color)
 		bDisplayBuffer[i] = color;
 	}
 	
-	matrix_nMarqueeWidth = 0;
-	matrix_nMarqueePos = 0;
+	/* matrix_nMarqueeWidth = 0; */
+	/* matrix_nMarqueePos = 0; */
 }
 
 void matrix_ScreenApply(void)
@@ -262,7 +263,7 @@ uint16_t matrix_GetCharWidth(const char letter)
 	int16_t		width		=	0;
 	
 	/* Space is often not included in font so use width of 'n' */
-	if (c == ' ') c = 'n';
+	if (c == ' ') c = ':';
 	
 	if (c < firstChar || c >= (firstChar + charCount)) 
 	{
@@ -369,18 +370,18 @@ uint16_t matrix_DrawChar(int16_t nX, int16_t nY, const char letter, eCOLOR color
 
 uint16_t matrix_GetTextCenter(char *textSource)
 {
-  uint8_t	width	= 0;
-  uint16_t	x		= 0;
+	uint16_t	width	= 1;
+	uint16_t	x		= 0;
     
-  for(x = 0; x < utils_strlen(textSource); x++)
-  {
- 	width += matrix_GetCharWidth(textSource[x]);
+	for(x = 0; x < utils_strlen(textSource); x++)
+	{
+		width += matrix_GetCharWidth(textSource[x]);
+		
+		/* Line gap */
+		width++;
+	}
 
-	/* Line gap +1 */
-	width++;
-  }
-
-  return ((int16_t)(DISPLAY_ACROSS * DISPLAY_WIDTH)/2) - (int16_t)(width/2);
+ 	return (int16_t)(((DISPLAY_ACROSS * DISPLAY_WIDTH) - width) / 2);
 }
 
 void matrix_DrawString(int16_t nX, int16_t nY, char *bStr, eCOLOR color)
@@ -416,9 +417,20 @@ void matrix_DrawString(int16_t nX, int16_t nY, char *bStr, eCOLOR color)
 	}
 }
 
+void matrix_PauseMarquee(FunctionalState state)
+{
+	matrix_bMarqueePause = state;
+}
+
+uint16_t matrix_GetMarqueePos(void)
+{
+	return matrix_nMarqueePos;
+}
+
 uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height, char *bStr, eMARQUEEDIR direction, eCOLOR color)
 {
-	int16_t i = 0;
+	int16_t		i				= 0;
+	int16_t		nMarqueePosTmp	= matrix_nMarqueePos;
 	
 	/* Set initial Marquee params */
 	if(matrix_nMarqueeWidth == 0)
@@ -510,6 +522,11 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 				return 1;
 			}
 			break;
+	}
+
+	if(matrix_bMarqueePause == ENABLE)
+	{
+		matrix_nMarqueePos = nMarqueePosTmp;
 	}
 	
 	return 0;
