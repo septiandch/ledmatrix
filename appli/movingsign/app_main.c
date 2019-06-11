@@ -13,7 +13,7 @@ const char		sWeekday[7][10]			= {	"AHAD", "SENIN", "SELASA", "RABU",
 const char		sJulianMonth[12][10]	= {	"JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI",
 											"AGUSTUS", "SEPTEMBER", "OKTOBER", "NOPEMBER", "DESEMBER" };
 static char		sMessageBuff[100]		= "";
-static char 	bColonState				= ' ';
+char		 	bColonState				= ' ';
 uint8_t			bMsg					= 0;
 uint16_t		nCounter				= 0;
 eDisplayMode	eCurrentDispMode		= MODE_BLANK;
@@ -24,23 +24,21 @@ void app_init(void)
 {
 	app_hal_init();
 	
-	
-	/* Startup Sequence */
+#ifdef USE_FMEM
 	fmem_Init();
-	
-	matrix_Init();
-	matrix_SetBrightness(1); //eeprom_ReadByte(MEM_BRIGHTNESS));
+#else
+	eeprom_init();
+#endif
 
-	//rtc_Init(SQW_1HZ);
+	rtc_Init(SQW_1HZ);
+	/* rtc_setTime(19, 6, 10, 18, 52, 0); */
+
+	matrix_Init();
+	matrix_SetBrightness(eeprom_read_byte(MEM_BRIGHTNESS));
 
 	usart_init(9600);
 
 	//app_PowerSaveSetup(&stPwrSave);
-}
-
-void app_run()
-{
-
 }
 
 eTaskStatus app_set_mode(eDisplayMode mode, char *message)
@@ -93,7 +91,7 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 			memcpy(sMessageTmp, message + index[0], utils_strlen(message) - index[0] - 1);
 			if(matrix_DrawMarquee(34, 16, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 34, 32, sMessageTmp, SCROLL_RIGHT_TO_LEFT, RED) == 1)
 			{
-				eTaskStat = FINISHED;
+				eTaskStat = IDLE;
 			}
 
 			matrtix_DrawImage((DISPLAY_WIDTH * DISPLAY_ACROSS) - 33, 0, &logo_masjid);
@@ -101,24 +99,16 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 			break;
 			
 		case MODE_BIGMESSAGE :
-			//rtc_readTime(&stRTime.year, &stRTime.month, &stRTime.date, &stRTime.day, &stRTime.hour, &stRTime.minute, &stRTime.second);
-			
-			//matrix_DrawBox(0, 6, 42, 26, RED);
-			//utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			//matrix_DrawString(3, 8, sMessageBuff, RED);
-
-			matrix_DrawFilledBox(0, 4, 49, 26, RED);
-			//utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			matrix_invert_color(ENABLE);
+			//matrix_DrawFilledBox(0, 4, 49, 26, RED);
+			utils_timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
 			matrix_SetFont(Unispace18);
-			matrix_DrawString(3, 6, "14:30", RED);
-			matrix_invert_color(DISABLE);
-			matrix_DrawLine(0, 27, 49, 27, RED);
+			matrix_DrawString(3, 6, sMessageBuff, RED);
+			matrix_DrawLine(50, 5, 50, 25, RED);
 			
 			matrix_SetFont(Verdana25);
-			if(matrix_DrawMarquee(51, 5, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 51, 28, message, SCROLL_RIGHT_TO_LEFT, RED) == 1)
+			if(matrix_DrawMarquee(55, 4, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 55, 28, message, SCROLL_RIGHT_TO_LEFT, RED) == 1)
 			{
-				eTaskStat = FINISHED;
+				eTaskStat = IDLE;
 			}
 			break;
 			
@@ -127,34 +117,26 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 
 			matrix_SetFont(ArialBlack16);
 
-			if(nCounter < 100)
+			if(nCounter < 10)
 			{
 				matrtix_DrawImage(12, 8, &doa_masjid);
 			}
-			else if(nCounter == 100)
+			else if(nCounter == 10)
 			{
 				matrix_ScreenClear(BLACK);
 			}
-			else if(nCounter > 100 && nCounter < 200)
+			else if(nCounter > 10)
 			{
 				memset(sMessageTmp, '\0', 50);
 				memcpy(sMessageTmp, message + index[0], utils_strlen(message) - index[0] - 1);
 
 				posX = matrix_GetTextCenter(sMessageTmp);
-				if(matrix_DrawMarquee(0, 14, DISPLAY_WIDTH * DISPLAY_ACROSS, 16, sMessageTmp, SCROLL_RIGHT_TO_LEFT, RED) == 0)
+				if(matrix_DrawMarquee(0, 14, DISPLAY_WIDTH * DISPLAY_ACROSS, 16, sMessageTmp, SCROLL_RIGHT_TO_LEFT, RED) == 1)
 				{
-					nCounter = 100 + 1;
+					matrix_ScreenClear(BLACK);
+					nCounter = 0;
+					eTaskStat = IDLE;
 				}
-				else
-				{
-					nCounter = 200;
-				}
-			}
-			else
-			{
-				matrix_ScreenClear(BLACK);
-				nCounter = 0;
-				eTaskStat = FINISHED;
 			}
 			
 			matrix_SetFont(System5x7);
@@ -179,7 +161,7 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 
 			if(matrix_DrawMarquee(0, 16, DISPLAY_WIDTH * DISPLAY_ACROSS, 32, sMessageTmp, SCROLL_RIGHT_TO_LEFT, RED) == 1)
 			{
-				eTaskStat = FINISHED;
+				eTaskStat = IDLE;
 			}
 			break;
 		
@@ -208,7 +190,7 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 				if(index[bMsg + 1] == 0)
 				{
 					bMsg = 0;
-					eTaskStat = FINISHED;
+					eTaskStat = IDLE;
 				}
 			}
 
@@ -216,7 +198,7 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 			{
 				matrix_PauseMarquee(ENABLE);
 
-				if(nCounter >= 150)
+				if(nCounter >= 5)
 				{
 					matrix_PauseMarquee(DISABLE);
 					nCounter = 0;
@@ -231,12 +213,6 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 		default :
 			/* Do something... */
 			break;
-	}
-	
-	nCounter++;
-	if(nCounter > 60000)
-	{
-		nCounter = 0;
 	}
 
 	matrix_ScreenApply();

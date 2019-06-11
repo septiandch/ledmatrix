@@ -19,6 +19,8 @@ void app_hal_init(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
 	GPIO_Init(BUZZER_GPIO, &GPIO_InitStructure);
+
+	app_hal_interrupt_init();
 }
 
 void app_hal_interrupt_init(void)
@@ -45,4 +47,31 @@ void app_hal_interrupt_init(void)
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x0F;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
+}
+
+void EXTI_SQW_IRQHandler(void)
+{
+	/** SQW Interrupt Handler */
+	if(EXTI_GetITStatus(EXTI_SQW_Line) != RESET)
+	{    		
+		if(bColonState == ':')
+		{
+			bColonState = ' ';
+		}
+		else
+		{
+			bColonState = ':';
+		}
+	
+		nCounter++;
+		if(nCounter > 1000)
+		{
+			nCounter = 0;
+		}
+
+		rtc_readTime(&stRTime.year, &stRTime.month, &stRTime.date, &stRTime.day, &stRTime.hour, &stRTime.minute, &stRTime.second);
+
+		/* Clear the  EXTI line 5 pending bit */
+		EXTI_ClearITPendingBit(EXTI_SQW_Line);
+	}
 }

@@ -34,6 +34,6 @@ extern void		fmem_ApplyBuffer(void);
 extern void		fmem_WriteToBuffer(uint16_t addr, uint8_t DataHi, uint8_t DataLo);
 extern void		fmem_ReadHalfWord(uint16_t addr, uint8_t *DataHi, uint8_t *DataLo);
 extern void		fmem_ReadString(uint16_t addr, char *str);
-extern void		fmem_WriteString(uint16_t addr, char *str, uint8_t len);
+extern void		fmem_WriteString(uint16_t addr, char *str, uint16_t len);
 	
 #endif /* _FMEM_H */

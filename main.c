@@ -14,12 +14,12 @@
 #include "appli/movingsign/app_main.h"
 
 /* GLOBAL VARIABLES */
-uint8_t		bTask					= 0;
-uint8_t		bMode					= 0;
-uint8_t		bDelay					= 0;
-uint8_t		bIteration				= 0;
-char		str[COMMAND_MAX_LEN]	= "";
-eTaskStatus	eTaskStat				= WORKING;
+uint8_t				bTask					= 0;
+volatile uint8_t	bMode					= MODE_BIGMESSAGE;
+volatile uint8_t	bDelay					= 10;
+volatile uint8_t	bIteration				= 0;
+volatile char		str[COMMAND_MAX_LEN]	= "EMPTY MESSAGE";
+eTaskStatus			eTaskStat				= IDLE;
 
 /* FUNCTION PROTOTYPES */
 
@@ -30,54 +30,64 @@ int main(void)
 {	
 	app_init();
 
-	app_command_read(0, &str, &bMode, &bDelay, &bIteration);
-
-	usart_puti(bMode);
-	usart_putc(',');
-	usart_puti(bDelay);
-	usart_putc(',');
-	usart_puti(bIteration);
-	usart_putc(',');
-	usart_puts(str);
-	usart_putc('\r');
+#ifdef USE_FMEM
+	fmem_WriteString(0 * COMMAND_MAX_LEN, "0,1,1,AHLAN WA SAHLAN\rSELAMAT DATANG DI MASJID AL-IKHLAS", 57);
+	fmem_ApplyBuffer();
+	fmem_WriteString(1 * COMMAND_MAX_LEN, "1,1,1,ADAB MASUK MASJID\rMENDAHULUKAN KAKI KANAN\rMEMBACA DOA MASUK MASJID\rBERWUDHU DARI RUMAH\r", 104);
+	fmem_ApplyBuffer();
+	fmem_WriteString(2 * COMMAND_MAX_LEN, "2,1,1,DOA MASUK MASJID\r\"Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu\"", 78);
+	fmem_ApplyBuffer();
+	fmem_WriteString(3 * COMMAND_MAX_LEN, "4,1,1,SELAMAT HARI RAYA IDUL FITRI 1440H, MOHON MAAF LAHIR DAN BATIN", 68);
+	fmem_ApplyBuffer();
+	fmem_WriteString(4 * COMMAND_MAX_LEN, "3,1,1,PENGUMUMAN\rKAJIAN RUTIN SABTU PAGI UNTUK SEMENTARA DILIBURKAN", 68);
+	fmem_ApplyBuffer();
+#else
+	//eeprom_write_byte(MEM_PWRSAVE_HOUR, 22);
+	//eeprom_write_byte(MEM_PWRSAVE_MINUTE, 0);
+	//eeprom_write_byte(MEM_PWRSAVE_DURATION, 5);
+	//eeprom_write_byte(MEM_BRIGHTNESS, 1);
+	//eeprom_write_string(0 * COMMAND_MAX_LEN, "0,1,1,AHLAN WA SAHLAN\rSELAMAT DATANG DI MASJID AL-IKHLAS", 57);
+	//eeprom_write_string(1 * COMMAND_MAX_LEN, "1,1,1,ADAB MASUK MASJID\rMENDAHULUKAN KAKI KANAN\rMEMBACA DOA MASUK MASJID\rBERWUDHU DARI RUMAH\r", 104);
+	//eeprom_write_string(2 * COMMAND_MAX_LEN, "2,1,1,DOA MASUK MASJID\r\"Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu\"", 78);
+	//eeprom_write_string(3 * COMMAND_MAX_LEN, "4,1,1,SELAMAT HARI RAYA IDUL FITRI 1440H, MOHON MAAF LAHIR DAN BATIN", 68);
+	//eeprom_write_string(4 * COMMAND_MAX_LEN, "3,1,1,PENGUMUMAN\rKAJIAN RUTIN SABTU PAGI UNTUK SEMENTARA DILIBURKAN", 68);
+#endif
 
 	while(1)
 	{
-		switch(bTask)
+		if(eTaskStat == IDLE)
 		{
-			case 0:
-				eTaskStat = app_set_mode(MODE_WELCOMEMESSAGE, "AHLAN WA SAHLAN\rSELAMAT DATANG DI MASJID AL-IKHLAS");
-				break;
+			/*Powersave Time Check*/
+			/* add codes here ! */
 
-			case 1:
-				eTaskStat = app_set_mode(MODE_REPORTMESSAGE, "ADAB MASUK MASJID\rMENDAHULUKAN KAKI KANAN\rMEMBACA DOA MASUK MASJID\rBERWUDHU SEBELUM BERANGKAT\r");
-				break;
-
-			case 2:
-				eTaskStat = app_set_mode(MODE_DOAMESSAGE, "DOA MASUK MASJID\r\"Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu\"");
-				break;
-				
-			case 3:
-				eTaskStat = app_set_mode(MODE_BIGMESSAGE, "SELAMAT HARI RAYA IDUL FITRI 1440H, MOHON MAAF LAHIR DAN BATIN");
-				break;
-
-			case 4:
-				eTaskStat = app_set_mode(MODE_TITLEDMESSAGE, "PENGUMUMAN\rKAJIAN RUTIN SABTU PAGI UNTUK SEMENTARA DILIBURKAN");
-				break;
-		}
-
-		if(eTaskStat == FINISHED)
-		{
+			app_command_read(bTask, &str, &bMode, &bDelay, &bIteration);
+			if(bMode >= 0 && bMode < 7)
+			{
+				eTaskStat = WORKING;
+			}
+			
 			bTask++;
-			if(bTask > 4)
+
+			if(bTask >= COMMAND_MAX_TASK)
 			{
 				bTask = 0;
 			}
 		}
-
-		utils_delay(10); 
+		else
+		{
+			eTaskStat = app_set_mode(bMode, str);
+			
+			if(eTaskStat == IDLE && bIteration > 1)
+			{
+				bIteration--;
+				eTaskStat = WORKING;
+			}
+		}
 		
+		/* Check for new incoming command messages */
 		app_command_check();
+
+		utils_delay(bDelay);
 	}
 }
  

@@ -10,6 +10,7 @@
 
 #include "dmd/dmdproc.h"
 #include "peripherals/fmem.h"
+#include "peripherals/at24cxx.h"
 #include "peripherals/rtc.h"
 #include "peripherals/usart.h"
 #include "utils.h"
@@ -25,14 +26,11 @@
 #include "app_cmd.h"
 
 /* DEFINITIONS */
-#define PARAM_MAX_TASK				5
-#define PARAM_MAX_LEN				81
-
-#define MEM_BASE					0x0EA6
-#define MEM_PWRSAVE_HOUR			(uint8_t)	(MEM_BASE + 0x00)
-#define MEM_PWRSAVE_MINUTE			(uint8_t)	(MEM_BASE + 0x01)
+#define MEM_BASE					0x0EA0
+#define MEM_PWRSAVE_HOUR			(uint16_t)	(MEM_BASE + 0x00)
+#define MEM_PWRSAVE_MINUTE			(uint16_t)	(MEM_BASE + 0x01)
 #define MEM_PWRSAVE_DURATION		(uint16_t)	(MEM_BASE + 0x02)
-#define MEM_BRIGHTNESS				(uint8_t)	(MEM_BASE + 0x04)
+#define MEM_BRIGHTNESS				(uint16_t)	(MEM_BASE + 0x03)
 
 /* ENUMERATION */
 typedef enum
@@ -43,19 +41,19 @@ typedef enum
 
 typedef enum
 {
-	MODE_POWERSAVE = 0,
-	MODE_WELCOMEMESSAGE,
-	MODE_BIGMESSAGE,
+	MODE_WELCOMEMESSAGE = 0,
+	MODE_REPORTMESSAGE,
 	MODE_DOAMESSAGE,
 	MODE_TITLEDMESSAGE,
-	MODE_REPORTMESSAGE,
+	MODE_BIGMESSAGE,
+	MODE_POWERSAVE,
 	MODE_BLANK
 } eDisplayMode;
 
 typedef enum
 {
-	WORKING = 0,
-	FINISHED
+	IDLE = 0,
+	WORKING
 } eTaskStatus;
 
 /* STRUCTURES */
@@ -64,12 +62,6 @@ typedef struct
 	uint8_t			hour;
 	uint8_t			minute;
 } stPrayerTime;
-
-typedef enum
-{
-	IDLE = 0,
-	RUN
-} eDisplayStatus;
 
 typedef struct
 {
@@ -95,6 +87,7 @@ typedef struct
 extern uint16_t			nCounter;
 extern stRealTime		stRTime;
 extern stPowerSave		stPwrSave;
+extern char				bColonState;
 
 /* Function Prototypes */
 extern void			app_init(void);

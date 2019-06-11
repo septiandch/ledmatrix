@@ -16,7 +16,7 @@ void fmem_Init(void)
 	uint16_t i	= 0;
 	
 	/* Initialize buffer */
-	for(i = 0; i < FMEM_PAGE_SIZE / 2; i++)
+	for(i = 0; i < (FMEM_PAGE_SIZE / 2); i++)
 	{
 		fmem_nBuffer[i] = (*(uint16_t*)(FMEM_PAGE_BASE_ADDRESS + FMEM_ADDR_OFFSET(i)));
 	}
@@ -47,7 +47,7 @@ void fmem_WriteToBuffer(uint16_t addr, uint8_t DataHi, uint8_t DataLo)
 	fmem_nBuffer[addr] = (uint16_t)((DataHi << 8) | DataLo);
 }
 
-void fmem_WriteString(uint16_t addr, char *str, uint8_t len)
+void fmem_WriteString(uint16_t addr, char *str, uint16_t len)
 {
 	uint16_t	index	= 0;
 	
@@ -118,7 +118,6 @@ void fmem_ApplyBuffer(void)
     FLASH_ClearFlag(FLASH_FLAG_BSY | FLASH_FLAG_EOP | FLASH_FLAG_PGERR | FLASH_FLAG_WRPRTERR);	
 	
 	FLASH_ErasePage(FMEM_PAGE_BASE_ADDRESS);
-	FLASH_ErasePage(FMEM_PAGE_BASE_ADDRESS + FMEM_PAGE_SIZE);
     
 	/* Write new data (whole page) to flash if data has beed changed */
 	for(i = 0; i < (FMEM_PAGE_SIZE / 2); i++)
