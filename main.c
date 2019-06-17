@@ -20,6 +20,7 @@ volatile uint8_t	bDelay					= 10;
 volatile uint8_t	bIteration				= 0;
 volatile char		str[COMMAND_MAX_LEN]	= "EMPTY MESSAGE";
 eTaskStatus			eTaskStat				= IDLE;
+eTimeEvent			eEvent					= EVENT_NONE;
 
 /* FUNCTION PROTOTYPES */
 
@@ -28,6 +29,10 @@ eTaskStatus			eTaskStat				= IDLE;
 /* MAIN FUNCTION */
 int main(void)
 {	
+	/*------------ Initialize Local Variables */
+	eTimeEvent	eCurrEvent	= eEvent;
+	
+	/*------------ Startup Sequences */
 	app_init();
 
 #ifdef USE_FMEM
@@ -44,7 +49,8 @@ int main(void)
 #else
 	//eeprom_write_byte(MEM_PWRSAVE_HOUR, 22);
 	//eeprom_write_byte(MEM_PWRSAVE_MINUTE, 0);
-	//eeprom_write_byte(MEM_PWRSAVE_DURATION, 5);
+	//eeprom_write_byte(MEM_PWRSAVE_DURATION, 0);
+	//eeprom_write_byte(MEM_PWRSAVE_DURATION + 1, 5);
 	//eeprom_write_byte(MEM_BRIGHTNESS, 1);
 	//eeprom_write_string(0 * COMMAND_MAX_LEN, "0,1,1,AHLAN WA SAHLAN\rSELAMAT DATANG DI MASJID AL-IKHLAS", 57);
 	//eeprom_write_string(1 * COMMAND_MAX_LEN, "1,1,1,ADAB MASUK MASJID\rMENDAHULUKAN KAKI KANAN\rMEMBACA DOA MASUK MASJID\rBERWUDHU DARI RUMAH\r", 104);
@@ -53,24 +59,40 @@ int main(void)
 	//eeprom_write_string(4 * COMMAND_MAX_LEN, "3,1,1,PENGUMUMAN\rKAJIAN RUTIN SABTU PAGI UNTUK SEMENTARA DILIBURKAN", 68);
 #endif
 
+	/*------------ Main Program Starts */
 	while(1)
 	{
 		if(eTaskStat == IDLE)
 		{
-			/*Powersave Time Check*/
-			/* add codes here ! */
+			/* Time Event Check*/
+			eEvent = app_check_event();
 
-			app_command_read(bTask, &str, &bMode, &bDelay, &bIteration);
-			if(bMode >= 0 && bMode < 7)
+			if(eCurrEvent != eEvent)
 			{
-				eTaskStat = WORKING;
+				matrix_ScreenClear(BLACK);
+				eCurrEvent = eEvent;
 			}
-			
-			bTask++;
 
-			if(bTask >= COMMAND_MAX_TASK)
+			switch(eEvent)
 			{
-				bTask = 0;
+				case EVENT_PWRSAVE :
+					app_set_mode(MODE_POWERSAVE, str);
+					break;
+
+				case EVENT_NONE :
+					app_get_message(bTask, &str, &bMode, &bDelay, &bIteration);
+					
+					if(bMode >= 0 && bMode < 7)
+					{
+						eTaskStat = WORKING;
+					}
+
+					bTask++;
+					if(bTask >= COMMAND_MAX_TASK)
+					{
+						bTask = 0;
+					}
+					break;
 			}
 		}
 		else

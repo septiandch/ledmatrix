@@ -1,6 +1,7 @@
-
+#include "app_main.h"
 #include "stm32f10x_conf.h"
 #include "peripherals/usart.h"
+#include "peripherals/rtc.h"
 #include "peripherals/fmem.h"
 
 #ifndef _APP_CMD_H_

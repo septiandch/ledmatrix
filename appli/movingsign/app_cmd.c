@@ -36,6 +36,75 @@ void app_command_write()
 
 			usart_puts("Message Update OK\n\r");
 			usart_message_clear();
+
+			/* Update Messages Buffer */
+			app_mem_read();
+			break;
+
+		/* RTC Command */
+		case '*' :
+			if(usart_nIndex - 1 == 13)
+			{
+				rtc_setTime(((usart_sMessage[ 0] - '0') * 10) + (usart_sMessage[ 1] - '0'),
+							((usart_sMessage[ 2] - '0') * 10) + (usart_sMessage[ 3] - '0'),
+							((usart_sMessage[ 4] - '0') * 10) + (usart_sMessage[ 5] - '0'),
+							((usart_sMessage[ 6] - '0') * 10) + (usart_sMessage[ 7] - '0'),
+							((usart_sMessage[ 8] - '0') * 10) + (usart_sMessage[ 9] - '0'),
+							((usart_sMessage[10] - '0') * 10) + (usart_sMessage[11] - '0'));
+
+				rtc_Init(SQW_1HZ);
+				utils_delay(10);
+				
+				usart_puts("RTC update OK\n\r");
+			}
+			else
+			{
+				usart_puts("NG\n\r");
+			}
+			
+			usart_message_clear();
+			break;
+				
+		/* Brigtness Command */
+		case '%' :
+			if(usart_nIndex - 1 == 6)
+			{
+				if(usart_sMessage[0] == 'B' && usart_sMessage[1] == 'R' && usart_sMessage[2] == 'G')
+				{
+					eeprom_write_byte(MEM_BRIGHTNESS, ((usart_sMessage[3] - '0') * 10) + (usart_sMessage[4] - '0') + 1);
+					utils_delay(10);
+					
+					matrix_SetBrightness(eeprom_read_byte(MEM_BRIGHTNESS));
+					
+					usart_puts("Brightness Update OK\n\r");
+				}
+			}
+			else
+			{
+				usart_puts("NG\n\r");
+			}
+					
+			usart_message_clear();
+			break;		
+		
+		/* Powersave Command */
+		case '$' :
+			if(usart_nIndex - 1 == 8)
+			{
+				app_set_powersave(( (usart_sMessage[0] - '0') * 10)	+ usart_sMessage[1] - '0',
+									( (usart_sMessage[2] - '0') * 10)	+ usart_sMessage[3] - '0',
+									( (usart_sMessage[4] - '0') * 100)	+ ((usart_sMessage[5] - '0') * 10) + usart_sMessage[6] - '0');
+				
+				app_get_powersave(&stPwrSave);
+				
+				usart_puts("Powersave Update OK\n\r");
+			}
+			else
+			{
+				usart_puts("NG\n\r");
+			}
+			
+			usart_message_clear();
 			break;
 
 		/* Reset Command */

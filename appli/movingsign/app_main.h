@@ -30,7 +30,7 @@
 #define MEM_PWRSAVE_HOUR			(uint16_t)	(MEM_BASE + 0x00)
 #define MEM_PWRSAVE_MINUTE			(uint16_t)	(MEM_BASE + 0x01)
 #define MEM_PWRSAVE_DURATION		(uint16_t)	(MEM_BASE + 0x02)
-#define MEM_BRIGHTNESS				(uint16_t)	(MEM_BASE + 0x03)
+#define MEM_BRIGHTNESS				(uint16_t)	(MEM_BASE + 0x04)
 
 /* ENUMERATION */
 typedef enum
@@ -49,6 +49,12 @@ typedef enum
 	MODE_POWERSAVE,
 	MODE_BLANK
 } eDisplayMode;
+
+typedef enum
+{
+	EVENT_NONE = 0,
+	EVENT_PWRSAVE
+} eTimeEvent;
 
 typedef enum
 {
@@ -91,6 +97,11 @@ extern char				bColonState;
 
 /* Function Prototypes */
 extern void			app_init(void);
+extern void			app_mem_read(void);
+extern void			app_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration);
 extern eTaskStatus	app_set_mode(eDisplayMode mode, char *message);
+extern eTimeEvent	app_check_event(void);
+extern void			app_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration);
+extern void			app_get_powersave(stPowerSave *stPwrSv);
 
 #endif /* _APP_MAIN_H_ */

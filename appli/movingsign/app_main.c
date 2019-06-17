@@ -8,17 +8,17 @@
 #include "app_main.h"
 
 /* INITIALIZE GLOBAL VARIABLES */
-const char		sWeekday[7][10]			= {	"AHAD", "SENIN", "SELASA", "RABU",
-											"KAMIS", "JUM'AT", "SABTU" };
-const char		sJulianMonth[12][10]	= {	"JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI",
-											"AGUSTUS", "SEPTEMBER", "OKTOBER", "NOPEMBER", "DESEMBER" };
-static char		sMessageBuff[100]		= "";
-char		 	bColonState				= ' ';
-uint8_t			bMsg					= 0;
-uint16_t		nCounter				= 0;
-eDisplayMode	eCurrentDispMode		= MODE_BLANK;
-stRealTime		stRTime					;
-stPowerSave		stPwrSave				;
+static char		sMessageBuff[100]							= "";
+char		 	bColonState									= ' ';
+uint8_t			bMsg										= 0;
+uint16_t		nCounter									= 0;
+eDisplayMode	eCurrentDispMode							= MODE_BLANK;
+stRealTime		stRTime										;
+stPowerSave		stPwrSave									;
+static uint8_t	bMsgMode[COMMAND_MAX_TASK]					;
+static uint8_t	bMsgDelay[COMMAND_MAX_TASK]					;
+static uint8_t	bMsgIteration[COMMAND_MAX_TASK]				;
+static char		sMsgStr[COMMAND_MAX_TASK][COMMAND_MAX_LEN]	;
 
 void app_init(void)
 {
@@ -38,7 +38,24 @@ void app_init(void)
 
 	usart_init(9600);
 
-	//app_PowerSaveSetup(&stPwrSave);
+	app_mem_read();
+
+	app_get_powersave(&stPwrSave);
+}
+
+void app_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration)
+{
+	eeprom_write_byte(MEM_PWRSAVE_HOUR, StartHour);
+	eeprom_write_byte(MEM_PWRSAVE_MINUTE, StartMinute);
+	eeprom_write_byte(MEM_PWRSAVE_DURATION, (uint8_t)((Duration >> 8) & 0xFF));
+	eeprom_write_byte(MEM_PWRSAVE_DURATION + 1, (uint8_t)(Duration & 0xFF));
+}
+
+void app_get_powersave(stPowerSave *stPwrSv)
+{
+	stPwrSv->StartHour		= eeprom_read_byte(MEM_PWRSAVE_HOUR);
+	stPwrSv->StartMinute	= eeprom_read_byte(MEM_PWRSAVE_MINUTE);
+	stPwrSv->Duration		= (uint16_t) (eeprom_read_byte(MEM_PWRSAVE_DURATION) << 8) | eeprom_read_byte(MEM_PWRSAVE_DURATION + 1);
 }
 
 eTaskStatus app_set_mode(eDisplayMode mode, char *message)
@@ -218,4 +235,56 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 	matrix_ScreenApply();
 
 	return eTaskStat;
+}
+
+eTimeEvent app_check_event(void)
+{
+	uint16_t	nCurrentTime	= 0;
+	eTimeEvent	eEventRet		= EVENT_NONE;
+
+	/* Current time plus MINUTES_TO_ADZAN for countdown */
+	nCurrentTime = (uint16_t)(stRTime.hour * 60) + stRTime.minute;
+
+	if(nCurrentTime == ((uint16_t)(stPwrSave.StartHour * 60) +  stPwrSave.StartMinute))
+	{
+		eEventRet = EVENT_PWRSAVE;
+	}
+	else if(nCurrentTime == ((uint16_t)(stPwrSave.StartHour * 60) +  stPwrSave.StartMinute) + stPwrSave.Duration)
+	{
+		eEventRet = EVENT_NONE;
+	}
+	else
+	{
+		eEventRet = EVENT_NONE;
+	}
+
+	return eEventRet;
+}
+
+void app_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration)
+{
+	uint16_t	i	= 0;
+	
+	*mode		= bMsgMode[task];
+	*delay		= bMsgDelay[task];
+	*iteration	= bMsgIteration[task];
+	
+	do
+	{
+		str[i] = sMsgStr[task][i];
+		i++;
+	}
+	while(str[i - 1] != '\0');
+
+	str[i] = '\0';
+}
+
+void app_mem_read(void)
+{
+	uint8_t	i	= 0;
+
+	for(i = 0; i < COMMAND_MAX_TASK; i++)
+	{
+		app_command_read(i, &sMsgStr[i], &bMsgMode[i], &bMsgDelay[i], &bMsgIteration[i]);
+	}
 }
