@@ -11,10 +11,10 @@
 #ifndef _APP_HAL_H_
 #define _APP_HAL_H_
 
-#define BUZZER_GPIO_RCC				RCC_APB2Periph_GPIOB
-#define BUZZER_GPIO					GPIOB
-#define BUZZER_PIN					GPIO_Pin_0
-#define BUZZER_DELAY				500
+#define BUZZER_GPIO_RCC				RCC_APB2Periph_GPIOA
+#define BUZZER_GPIO					GPIOA
+#define BUZZER_PIN					GPIO_Pin_8
+#define BUZZER_DELAY				250
 		
 #define SQWOUT_PIN					GPIO_Pin_5
 #define GPIO_SQWPORT				GPIO_PortSourceGPIOB

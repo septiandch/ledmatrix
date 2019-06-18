@@ -62,17 +62,20 @@ int main(void)
 	/*------------ Main Program Starts */
 	while(1)
 	{
+		/* Time Event Check*/
+		app_check_event(&eEvent);
+
+		if(eCurrEvent != eEvent)
+		{
+			eCurrEvent = eEvent;
+			eTaskStat = IDLE;
+
+			matrix_ResetMarqueePos();
+			matrix_ScreenClear(BLACK);
+		}
+
 		if(eTaskStat == IDLE)
 		{
-			/* Time Event Check*/
-			eEvent = app_check_event();
-
-			if(eCurrEvent != eEvent)
-			{
-				matrix_ScreenClear(BLACK);
-				eCurrEvent = eEvent;
-			}
-
 			switch(eEvent)
 			{
 				case EVENT_PWRSAVE :

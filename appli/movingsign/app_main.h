@@ -100,7 +100,7 @@ extern void			app_init(void);
 extern void			app_mem_read(void);
 extern void			app_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration);
 extern eTaskStatus	app_set_mode(eDisplayMode mode, char *message);
-extern eTimeEvent	app_check_event(void);
+extern void			app_check_event(eTimeEvent *eEventRet);
 extern void			app_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration);
 extern void			app_get_powersave(stPowerSave *stPwrSv);
 

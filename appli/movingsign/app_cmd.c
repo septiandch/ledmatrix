@@ -18,6 +18,7 @@ void app_command_check()
 void app_command_write()
 {
 	volatile char	sMessageTmp[COMMAND_MAX_LEN + 3]	= "";
+	uint8_t			bCmdStat							= 1;
 
 	switch(usart_sMessage[usart_nIndex - 2])
 	{
@@ -52,8 +53,8 @@ void app_command_write()
 							((usart_sMessage[ 8] - '0') * 10) + (usart_sMessage[ 9] - '0'),
 							((usart_sMessage[10] - '0') * 10) + (usart_sMessage[11] - '0'));
 
-				rtc_Init(SQW_1HZ);
 				utils_delay(10);
+				rtc_Init(SQW_1HZ);
 				
 				usart_puts("RTC update OK\n\r");
 			}
@@ -120,7 +121,16 @@ void app_command_write()
 		default :
 			usart_puts("NG\n\r");
 			usart_message_clear();
+
+			bCmdStat = 0;
 			break;
+	}
+
+	if(bCmdStat == 1)
+	{
+		BUZZER_GPIO->BSRR  = BUZZER_PIN;
+		utils_delay(BUZZER_DELAY);
+		BUZZER_GPIO->BRR  = BUZZER_PIN;
 	}
 }
 

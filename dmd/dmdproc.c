@@ -427,6 +427,11 @@ uint16_t matrix_GetMarqueePos(void)
 	return matrix_nMarqueePos;
 }
 
+void matrix_ResetMarqueePos(void)
+{
+	matrix_nMarqueePos = 0;
+}
+
 uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height, char *bStr, eMARQUEEDIR direction, eCOLOR color)
 {
 	int16_t		i				= 0;

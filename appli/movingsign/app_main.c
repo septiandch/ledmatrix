@@ -30,14 +30,17 @@ void app_init(void)
 	eeprom_init();
 #endif
 
+	utils_delay(100);
 	rtc_Init(SQW_1HZ);
 	/* rtc_setTime(19, 6, 10, 18, 52, 0); */
 
+	utils_delay(100);
 	matrix_Init();
 	matrix_SetBrightness(eeprom_read_byte(MEM_BRIGHTNESS));
 
 	usart_init(9600);
 
+	utils_delay(100);
 	app_mem_read();
 
 	app_get_powersave(&stPwrSave);
@@ -55,7 +58,7 @@ void app_get_powersave(stPowerSave *stPwrSv)
 {
 	stPwrSv->StartHour		= eeprom_read_byte(MEM_PWRSAVE_HOUR);
 	stPwrSv->StartMinute	= eeprom_read_byte(MEM_PWRSAVE_MINUTE);
-	stPwrSv->Duration		= (uint16_t) (eeprom_read_byte(MEM_PWRSAVE_DURATION) << 8) | eeprom_read_byte(MEM_PWRSAVE_DURATION + 1);
+	stPwrSv->Duration		= ((uint16_t) eeprom_read_byte(MEM_PWRSAVE_DURATION) << 8) | eeprom_read_byte(MEM_PWRSAVE_DURATION + 1);
 }
 
 eTaskStatus app_set_mode(eDisplayMode mode, char *message)
@@ -77,13 +80,14 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 		nCounter			= 0;
 		bMsg				= 0;
 	}
-
+	
 	switch(mode)
 	{
 		case MODE_POWERSAVE :
 			matrix_SetFont(System5x7);
 			utils_timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			matrix_DrawString(55, 4, sMessageBuff, RED);
+			posX = matrix_GetTextCenter(sMessageBuff);
+			matrix_DrawString(posX, 11, sMessageBuff, RED);
 			
 			if(bColonState != bColonState)
 			{
@@ -237,28 +241,21 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 	return eTaskStat;
 }
 
-eTimeEvent app_check_event(void)
+void app_check_event(eTimeEvent	*eEventRet)
 {
 	uint16_t	nCurrentTime	= 0;
-	eTimeEvent	eEventRet		= EVENT_NONE;
 
 	/* Current time plus MINUTES_TO_ADZAN for countdown */
 	nCurrentTime = (uint16_t)(stRTime.hour * 60) + stRTime.minute;
 
 	if(nCurrentTime == ((uint16_t)(stPwrSave.StartHour * 60) +  stPwrSave.StartMinute))
 	{
-		eEventRet = EVENT_PWRSAVE;
+		*eEventRet = EVENT_PWRSAVE;
 	}
 	else if(nCurrentTime == ((uint16_t)(stPwrSave.StartHour * 60) +  stPwrSave.StartMinute) + stPwrSave.Duration)
 	{
-		eEventRet = EVENT_NONE;
+		*eEventRet = EVENT_NONE;
 	}
-	else
-	{
-		eEventRet = EVENT_NONE;
-	}
-
-	return eEventRet;
 }
 
 void app_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration)
