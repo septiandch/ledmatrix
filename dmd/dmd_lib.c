@@ -1,11 +1,11 @@
 /**
- *  Led Matrix Library
+ *  DMD processing Library
  *  Written By  : Septian D. Chandra
  *  E-mail      : septian.d.chandra@gmail.com
  *  Blog URL    : http://solderingcodes.blogspot.com
  */
 
-#include "dmdproc.h"
+#include "dmd_lib.h"
 
 /** FUNCTION PROTOTYPES */
 uint16_t matrix_PixelMapping(int16_t nX, int16_t nY);
@@ -492,5 +492,10 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 
 void matrix_SetBrightness(uint8_t percentage)
 {
+	if(percentage > 99)
+	{
+		percentage = 99;
+	}
+
 	dmd_SetBrightness(percentage);
 }

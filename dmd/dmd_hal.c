@@ -1,11 +1,11 @@
 /**
- *  DMD HUB08 Library
+ *  DMD Hardware Access Layer Library
  *  Written By  : Septian D. Chandra
  *  E-mail      : septian.d.chandra@gmail.com
  *  Blog URL    : http://solderingcodes.blogspot.com
  */
 
-#include "dmdhal.h"
+#include "dmd_hal.h"
 
 /* GLOBAL VARIABLES */
 uint8_t dmd_bDisplayBuffer[DISPLAY_SIZE * DISPLAY_MODE];
@@ -100,8 +100,11 @@ void dmd_Init()
 #endif
 
 #if defined(ENABLE_PWM)
-	uint16_t TimerPeriod = (SystemCoreClock / 17570 ) - 1;
-	uint16_t Channel1Pulse = (uint16_t) (((uint32_t) 5 * (TimerPeriod - 1)) / 10);
+	uint16_t TimerPeriod = PWM_PERIOD;
+	uint16_t ChannelPulse = (uint16_t) (((uint32_t) 5 * (TimerPeriod - 1)) / 10);
+
+	/*  GPIO EN RCC */
+	RCC_APB2PeriphClockCmd(DMD_GPIO_EN_RCC, ENABLE);
 
 	/* PWM_TIM clock enable */
 	RCC_APB1PeriphClockCmd(PWM_TIM_RCC, ENABLE);
@@ -113,7 +116,7 @@ void dmd_Init()
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_EN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PIN_EN_PORT, &GPIO_InitStructure);
 	
 	/* Time Base configuration */
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
@@ -124,7 +127,7 @@ void dmd_Init()
 	TIM_TimeBaseInit(PWM_TIM, &TIM_TimeBaseStructure);
 	
 	/* Channel x Configuration in PWM mode */
-	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;
+	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
 	TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
 	TIM_OCInitStructure.TIM_Pulse = PWM_START_VAL;
@@ -143,11 +146,14 @@ void dmd_Init()
 	TIM_CtrlPWMOutputs(PWM_TIM, ENABLE);
 
 #else
+	/*  GPIO EN RCC */
+	RCC_APB2PeriphClockCmd(DMD_GPIO_EN_RCC, ENABLE);
+
     /* GPIO pin init for EN */
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_EN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PIN_EN_PORT, &GPIO_InitStructure);
 #endif
 
 #if defined(ENABLE_TIM)
@@ -286,8 +292,8 @@ void dmd_SendData(uint8_t data)
         {
 			DMD_PIN_PORT->BSRR = DMD_PIN_DAT;
 		}
+
         data >>= 1;
-        
         DMD_CLOCK();
     }
 #endif
@@ -327,7 +333,7 @@ void dmd_SendData75(uint16_t nBufferHi, uint16_t nBufferLo)
 void dmd_SetBrightness(uint8_t percentage)
 {
 #ifdef ENABLE_PWM
-	uint16_t value = ((uint16_t)(100 - percentage)  * PWM_PERIOD) / 100;
+	uint32_t value = (uint32_t)((uint32_t)(PWM_PERIOD * percentage) / 100);
 	
 	PWM_SetCompare(PWM_TIM, value);
 #endif
