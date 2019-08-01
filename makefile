@@ -5,8 +5,8 @@ STD_PERIPH_DRIVER ?= $(STD_PERIPH_LIBS)/Libraries/STM32F10x_StdPeriph_Driver/src
 # list of source files
 SOURCES  = main.c
 SOURCES += utils.c
-SOURCES += dmd/dmdproc.c
-SOURCES += dmd/dmdhal.c
+SOURCES += dmd/dmd_lib.c
+SOURCES += dmd/dmd_hal.c
 # SOURCES += peripherals/usart.c
 # SOURCES += peripherals/i2c.c
 # SOURCES += peripherals/rtc.c

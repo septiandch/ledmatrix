@@ -7,7 +7,7 @@
   ******************************************************************************
   */
 
-#include "dmd/dmdproc.h"
+#include "dmd/dmd_lib.h"
 #include "fonts/SystemFont.h"
 #include "fonts/ArialBlack16.h"
 
@@ -27,15 +27,11 @@ int main(void)
 	matrix_SetBrightness(10);
 	utils_Delay(10);
 
-	matrix_SetFont(ArialBlack16);
+	matrix_SetFont(System5x7);
 
-	matrix_SetBrightness(1);
-
-	matrix_DrawString(0, 0, "TOTAL INFAQ BULAN MEI 2019", RED);
+	matrix_DrawString(0, 0, "123", RED);
 
 	while(1)
 	{
-		matrix_DrawMarquee(0, 16, 32*7, 16, "Rp. 52.754.000", SCROLL_RIGHT_TO_LEFT, RED);
-		utils_Delay(10);
 	}
 }

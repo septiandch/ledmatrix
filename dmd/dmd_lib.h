@@ -1,5 +1,5 @@
 /**
- *  Led Matrix Library
+ *  DMD processing Library
  *  Written By  : Septian D. Chandra
  *  E-mail      : septian.d.chandra@gmail.com
  *  Blog URL    : http://solderingcodes.blogspot.com
@@ -7,12 +7,12 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "dmdhal.h"
+#include "dmd_hal.h"
 #include "utils.h"
 #include "pgmspace.h"
 
-#ifndef	_DMDPROC_H_
-#define	_DMDPROC_H_
+#ifndef	_DMD_LIB_H_
+#define	_DMD_LIB_H_
 
 /* #define ENABLE_BUFFER */
 
@@ -92,4 +92,4 @@ extern void			matrix_DrawFilledBox(int16_t x1, int16_t y1, int16_t x2, int16_t y
 unsigned int 		matrix_TextCenter(char *textSource);
 extern int			matrix_ScrollText(const char *text, int delay);
 
-#endif	/** _DMDPROC_H_ */
+#endif	/** _DMD_LIB_H_ */
