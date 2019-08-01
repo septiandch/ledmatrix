@@ -28,11 +28,8 @@ void dmd_Init()
 	RCC_APB2PeriphClockCmd(DMD_GPIO_RCC, ENABLE);
 
 #	if defined(ENABLE_SPI)
-	/*  GPIO & SPI RCC */
+	/*  SPI RCC */
     RCC_APB2PeriphClockCmd(DMD_SPI_RCC, ENABLE);
-	
-	/* Alternative Function IO clock enable */
-	RCC_APB2PeriphClockCmd(PWM_AFIO_RCC, ENABLE);
 	
     /* Initialize GPIO pins for MOSI, MISO, and SCK (Alternate Mode) */
 	GPIO_InitStructure.GPIO_Pin		= DMD_PIN_CLK | DMD_PIN_DAT;

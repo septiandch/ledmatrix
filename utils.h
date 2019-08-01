@@ -14,9 +14,9 @@
 #define NONE	255
 
 extern uint16_t utils_strlen(const char * str);
-extern uint8_t	utils_IntToString(uint16_t value, uint8_t padding, char *strout);
-extern uint8_t	utils_Timestamp(uint16_t n1, uint16_t n2, uint16_t n3, char delimiter, char *strout);
-extern uint8_t	utils_Concat(char *str1, char *str2, char *str3, char *strout);
-extern void		utils_StringParse(char *str, uint8_t *index);
-extern void		utils_Delay(uint16_t millis);
+extern uint8_t	utils_int2str(uint16_t value, uint8_t padding, char *strout);
+extern uint8_t	utils_timestamp(uint16_t n1, uint16_t n2, uint16_t n3, char delimiter, char *strout);
+extern uint8_t	utils_concat(char *str1, char *str2, char *str3, char *strout);
+extern void		utils_parse(char delimiter, char *strtarget, uint8_t *outputindex);
+extern void		utils_delay(uint16_t millis);
 #endif /** _UTILS_H_ */

@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void utils_Delay(uint16_t millis)
+void utils_delay(uint16_t millis)
 {
     while (millis-- > 0)
     {
@@ -21,7 +21,7 @@ void utils_Delay(uint16_t millis)
     }
 }
 
-uint8_t utils_IntToString(uint16_t value, uint8_t padding, char *strout)
+uint8_t utils_int2str(uint16_t value, uint8_t padding, char *strout)
 {
 	uint16_t	npad	= 1;
 	uint16_t	num		= 10000;
@@ -67,7 +67,7 @@ uint8_t utils_IntToString(uint16_t value, uint8_t padding, char *strout)
 	return index;
 }
 
-uint8_t utils_Concat(char *str1, char *str2, char *str3, char *strout)
+uint8_t utils_concat(char *str1, char *str2, char *str3, char *strout)
 {
 	uint8_t	i			= 0;
 	uint8_t	j			= 0;
@@ -96,7 +96,7 @@ uint8_t utils_Concat(char *str1, char *str2, char *str3, char *strout)
 	return index;
 }
 
-uint8_t utils_Timestamp(uint16_t n1, uint16_t n2, uint16_t n3, char delimiter, char *strout)
+uint8_t utils_timestamp(uint16_t n1, uint16_t n2, uint16_t n3, char delimiter, char *strout)
 {
 	uint8_t	i		= 0;
 	uint8_t	index	= 0;
@@ -111,7 +111,7 @@ uint8_t utils_Timestamp(uint16_t n1, uint16_t n2, uint16_t n3, char delimiter, c
 			break;
 		}
 		
-		len = utils_IntToString(data[i], 1, &strout[index]);
+		len = utils_int2str(data[i], 1, &strout[index]);
 		index += len;
 		
 		if(i < 2)
@@ -126,19 +126,21 @@ uint8_t utils_Timestamp(uint16_t n1, uint16_t n2, uint16_t n3, char delimiter, c
 	return index;
 }
 
-void utils_StringParse(char *str, uint8_t *index)
+void utils_parse(char delimiter, char *strtarget, uint8_t *outputindex)
 {
-	uint8_t	i = 0;
-			
-	do
+	int8_t	i		= 0;
+	int8_t	index	= 0;
+	
+	while(strtarget[index] != '\0')
 	{
-		if(str[i] == ',')
+		if(strtarget[index] == delimiter)
 		{
-			index[i] = i + 1;
+			outputindex[i] = index + 1;
 			i++;
 		}
+
+		index++;
 	}
-	while(str[i - 1] != '\0');
 }
 
 uint16_t utils_strlen(const char * str)

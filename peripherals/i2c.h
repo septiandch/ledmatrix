@@ -6,17 +6,32 @@
 #include <stm32f10x_rcc.h>
 #include <stm32f10x_gpio.h>
 
-#define I2Cx            	I2C2
-#define I2Cx_RCC        	RCC_APB1Periph_I2C2
-#define I2C_GPIO_RCC    	RCC_APB2Periph_GPIOB
+#define USE_I2C1
+/* #define USE_I2C2 */
 
-#define I2Cx_ER_IRQn		I2C2_ER_IRQn
-#define I2Cx_ER_IRQHandler	I2C2_ER_IRQHandler
+#if defined(USE_I2C1)
+#	define I2Cx            		I2C1
+#	define I2Cx_RCC        		RCC_APB1Periph_I2C1
+#	define I2C_GPIO_RCC    		RCC_APB2Periph_GPIOB
 
-#define I2C_GPIO        	GPIOB
-#define I2C_PIN_SDA     	GPIO_Pin_11
-#define I2C_PIN_SCL     	GPIO_Pin_10
+#	define I2Cx_ER_IRQn			I2C1_ER_IRQn
+#	define I2Cx_ER_IRQHandler	I2C1_ER_IRQHandler
 
+#	define I2C_GPIO        		GPIOB
+#	define I2C_PIN_SDA     		GPIO_Pin_7
+#	define I2C_PIN_SCL     		GPIO_Pin_6
+#elif defined(USE_I2C2)
+#	define I2Cx            		I2C2
+#	define I2Cx_RCC        		RCC_APB1Periph_I2C2
+#	define I2C_GPIO_RCC    		RCC_APB2Periph_GPIOB
+
+#	define I2Cx_ER_IRQn			I2C2_ER_IRQn
+#	define I2Cx_ER_IRQHandler	I2C2_ER_IRQHandler
+
+#	define I2C_GPIO        		GPIOB
+#	define I2C_PIN_SDA     		GPIO_Pin_11
+#	define I2C_PIN_SCL     		GPIO_Pin_10
+#endif
  
 extern void		i2c_init(void);
 extern void		i2c_start();

@@ -12,7 +12,7 @@ volatile char 		usart_sMessage[MESSAGE_MAX_LEN];
 volatile uint8_t	usart_nIndex = 0;
 
 /* FUNCTIONS */
-void usart_Init(const uint16_t baudrate)
+void usart_init(const uint16_t baudrate)
 {
     GPIO_InitTypeDef	GPIO_InitStructure;
 	USART_InitTypeDef	USART_InitStructure;
@@ -74,20 +74,20 @@ void USARTx_IRQHandler(void)
 		
 		if(usart_nIndex >= MESSAGE_MAX_LEN || usart_sMessage[usart_nIndex - 1] == '\0')
 		{
-			usart_ClearMessage();
+			usart_message_clear();
 		}
 		
 		USART_ClearITPendingBit(USARTx, USART_IT_RXNE);
 	}
 }
 
-void usart_ClearMessage(void)
+void usart_message_clear(void)
 {
 	usart_nIndex = 0;
 	memset(usart_sMessage, '\0', MESSAGE_MAX_LEN);
 }
 
-char usart_GetLastChar(void)
+char usart_get_lastchar(void)
 {
 	return usart_sMessage[usart_nIndex - 1];
 }
@@ -103,7 +103,7 @@ void usart_putc(char chr)
 void usart_puts(char *str)
 {
 	unsigned int	i		= 0;
-	unsigned int	len		= strlen(str);
+	unsigned int	len		= utils_strlen(str);
 	
 	for(i = 0; i < len; i++)
 	{

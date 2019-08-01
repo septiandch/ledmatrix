@@ -14,7 +14,7 @@
 #ifndef	_DMD_LIB_H_
 #define	_DMD_LIB_H_
 
-/* #define ENABLE_BUFFER */
+#define ENABLE_DOUBLEBUFFER
 
 /** Font Indices */
 #define	FONT_LENGTH             0
@@ -28,14 +28,20 @@
 #	define MATRIX_SIZE				DISPLAY_DOWN * DISPLAY_HEIGHT * DISPLAY_MODE
 #endif
 
+#ifdef ENABLE_DOUBLEBUFFER
+#	define bDisplayBuffer	matrix_bDisplayBuffer
+#else
+#	define bDisplayBuffer	dmd_bDisplayBuffer
+#endif
+
 /** STRUCTURES */
 typedef struct
 {
-	uint8_t		active;
-	int16_t		startX;
-	int16_t		startY;
-	int16_t		endX;
-	int16_t		endY;
+	FunctionalState	active;
+	int16_t			startX;
+	int16_t			startY;
+	int16_t			endX;
+	int16_t			endY;
 } stMatrixFrame;
 
 /** ENUMERATIONS */
@@ -74,6 +80,8 @@ extern void			matrix_SetBrightness(uint8_t percentage);
 extern uint16_t		matrix_GetCharWidth(const char letter);
 extern uint16_t		matrix_GetTextCenter(char *textSource);
 	
+extern void			matrix_invert_color(FunctionalState state);
+
 extern void			matrix_FrameCreate(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height);
 extern void			matrix_FrameClear(void);
 	
@@ -85,9 +93,15 @@ extern void 		matrix_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eC
 	
 extern uint16_t		matrix_DrawChar(int16_t bX, int16_t bY, const char letter, eCOLOR color);
 extern void			matrix_DrawString(int16_t nX, int16_t nY, char *bStr, eCOLOR color);
-extern uint8_t		matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height, char *bStr, eMARQUEEDIR direction, eCOLOR color);
 extern void			matrix_DrawBox(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color);
 extern void			matrix_DrawFilledBox(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color);
+extern void			matrtix_DrawImage(uint16_t posX, uint16_t posY, uint8_t *data);
+
+extern uint16_t		matrix_GetMarqueePos(void);
+extern void			matrix_ResetMarqueePos(void);
+extern void			matrix_PauseMarquee(FunctionalState state);
+extern uint8_t		matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height, char *bStr, eMARQUEEDIR direction, eCOLOR color);
+
 
 unsigned int 		matrix_TextCenter(char *textSource);
 extern int			matrix_ScrollText(const char *text, int delay);
