@@ -1,32 +1,39 @@
+# path to selected program mode
+PRGSEL ?= prg/sample
+
 # path to STM32F103 standard peripheral library
 STD_PERIPH_LIBS ?= /home/septiandc/Workspace/Program/stmlib
+STD_PERIPH_STM32 ?= /Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x
 STD_PERIPH_DRIVER ?= $(STD_PERIPH_LIBS)/Libraries/STM32F10x_StdPeriph_Driver/src
 
-# list of source files
-SOURCES  = main.c
-SOURCES += utils.c
-SOURCES += dmd/dmdproc.c
-SOURCES += dmd/dmdhal.c
-SOURCES += appli/movingsign/app_main.c
-SOURCES += appli/movingsign/app_hal.c
-SOURCES += appli/movingsign/app_cmd.c
-SOURCES += peripherals/usart.c
-SOURCES += peripherals/i2c.c
-SOURCES += peripherals/rtc.c
-SOURCES += peripherals/at24cxx.c
-SOURCES += peripherals/fmem.c
-SOURCES += $(STD_PERIPH_LIBS)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c
-SOURCES += $(STD_PERIPH_LIBS)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/TrueSTUDIO/startup_stm32f10x_md.s
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_rcc.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_spi.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_dma.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_gpio.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_usart.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_i2c.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_exti.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_flash.c
-SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_tim.c
-SOURCES += $(STD_PERIPH_DRIVER)/misc.c
+# list of peripheral source files
+SOURCES  =	$(STD_PERIPH_LIBS)$(STD_PERIPH_STM32)/system_stm32f10x.c \
+			$(STD_PERIPH_LIBS)$(STD_PERIPH_STM32)/startup/TrueSTUDIO/startup_stm32f10x_md.s \
+			$(STD_PERIPH_DRIVER)/stm32f10x_rcc.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_spi.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_dma.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_gpio.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_usart.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_i2c.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_exti.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_flash.c \
+			$(STD_PERIPH_DRIVER)/stm32f10x_tim.c \
+			$(STD_PERIPH_DRIVER)/misc.c
+
+# list of main program source files
+SOURCES +=	main.c \
+			# $(PRGSEL)/prg_.c \
+			# $(PRGSEL)/prg_.c \
+			# $(PRGSEL)/prg_.c
+
+# list of libraries source files
+SOURCES +=	lib/utils.c
+
+# list of DMD source files
+SOURCES +=	dmd/dmd_prm.c \
+			dmd/dmd_hal.c \
+			dmd/dmd_proc.c
+
 
 # name for output binary files
 OBJDIR ?= .obj

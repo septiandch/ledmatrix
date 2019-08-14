@@ -20,7 +20,7 @@ static uint8_t	bMsgDelay[COMMAND_MAX_TASK]					;
 static uint8_t	bMsgIteration[COMMAND_MAX_TASK]				;
 static char		sMsgStr[COMMAND_MAX_TASK][COMMAND_MAX_LEN]	;
 
-void app_init(void)
+void ledmatrix_init(void)
 {
 	app_hal_init();
 	
@@ -35,18 +35,18 @@ void app_init(void)
 	/* rtc_setTime(19, 6, 10, 18, 52, 0); */
 
 	utils_delay(100);
-	matrix_Init();
-	matrix_SetBrightness(eeprom_read_byte(MEM_BRIGHTNESS));
+	matrix_init();
+	matrix_set_brightness(eeprom_read_byte(MEM_BRIGHTNESS));
 
 	usart_init(9600);
 
 	utils_delay(100);
-	app_mem_read();
+	ledmatrix_get_mem();
 
-	app_get_powersave(&stPwrSave);
+	ledmatrix_get_powersave(&stPwrSave);
 }
 
-void app_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration)
+void ledmatrix_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration)
 {
 	eeprom_write_byte(MEM_PWRSAVE_HOUR, StartHour);
 	eeprom_write_byte(MEM_PWRSAVE_MINUTE, StartMinute);
@@ -54,14 +54,14 @@ void app_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration
 	eeprom_write_byte(MEM_PWRSAVE_DURATION + 1, (uint8_t)(Duration & 0xFF));
 }
 
-void app_get_powersave(stPowerSave *stPwrSv)
+void ledmatrix_get_powersave(stPowerSave *stPwrSv)
 {
 	stPwrSv->StartHour		= eeprom_read_byte(MEM_PWRSAVE_HOUR);
 	stPwrSv->StartMinute	= eeprom_read_byte(MEM_PWRSAVE_MINUTE);
 	stPwrSv->Duration		= ((uint16_t) eeprom_read_byte(MEM_PWRSAVE_DURATION) << 8) | eeprom_read_byte(MEM_PWRSAVE_DURATION + 1);
 }
 
-eTaskStatus app_set_mode(eDisplayMode mode, char *message)
+eTaskStatus ledmatrix_set_mode(eDisplayMode mode, char *message)
 {
 	/* Local Variables */
 	uint8_t			index[10]			;
@@ -75,7 +75,7 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 	/* Clear Screen when change mode */
 	if(eCurrentDispMode != mode)
 	{
-		matrix_ScreenClear(BLACK);
+		matrix_clr_screen(CL_BLACK);
 		eCurrentDispMode	= mode;
 		nCounter			= 0;
 		bMsg				= 0;
@@ -84,10 +84,10 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 	switch(mode)
 	{
 		case MODE_POWERSAVE :
-			matrix_SetFont(System5x7);
+			matrix_set_font(System5x7);
 			utils_timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			posX = matrix_GetTextCenter(sMessageBuff);
-			matrix_DrawString(posX, 11, sMessageBuff, RED);
+			posX = matrix_get_textcenter(sMessageBuff);
+			matrix_draw_string(posX, 11, sMessageBuff, CL_RED);
 			
 			if(bColonState != bColonState)
 			{
@@ -97,37 +97,37 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 			break;
 			
 		case MODE_WELCOMEMESSAGE :
-			matrtix_DrawImage(1, 0, &logo_masjid);
+			matrix_draw_image(1, 0, &logo_masjid);
 
 			utils_parse('\r', message, &index);
 
-			matrix_SetFont(ArialBlack16);
+			matrix_set_font(ArialBlack16);
 
 			memset(sMessageTmp, '\0', 50);
 			memcpy(sMessageTmp, message, index[0]);
-			posX = matrix_GetTextCenter(sMessageTmp);
-			matrix_DrawString(posX + 5, 0, sMessageTmp, RED);
+			posX = matrix_get_textcenter(sMessageTmp);
+			matrix_draw_string(posX + 5, 0, sMessageTmp, CL_RED);
 
 			memset(sMessageTmp, '\0', 50);
 			memcpy(sMessageTmp, message + index[0], utils_strlen(message) - index[0] - 1);
-			if(matrix_DrawMarquee(34, 16, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 34, 32, sMessageTmp, SCROLL_RIGHT_TO_LEFT, RED) == 1)
+			if(matrix_draw_marquee(34, 16, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 34, 32, sMessageTmp, SCROLL_RIGHT_TO_LEFT, CL_RED) == 1)
 			{
 				eTaskStat = IDLE;
 			}
 
-			matrtix_DrawImage((DISPLAY_WIDTH * DISPLAY_ACROSS) - 33, 0, &logo_masjid);
-			matrix_DrawBox(0, 0, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 1, (DISPLAY_HEIGHT * DISPLAY_DOWN) - 1, RED);
+			matrix_draw_image((DISPLAY_WIDTH * DISPLAY_ACROSS) - 33, 0, &logo_masjid);
+			matrix_draw_box(0, 0, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 1, (DISPLAY_HEIGHT * DISPLAY_DOWN) - 1, CL_RED);
 			break;
 			
 		case MODE_BIGMESSAGE :
-			//matrix_DrawFilledBox(0, 4, 49, 26, RED);
+			//matrix_draw_filledbox(0, 4, 49, 26, CL_RED);
 			utils_timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			matrix_SetFont(Unispace18);
-			matrix_DrawString(3, 6, sMessageBuff, RED);
-			matrix_DrawLine(50, 5, 50, 25, RED);
+			matrix_set_font(Unispace18);
+			matrix_draw_string(3, 6, sMessageBuff, CL_RED);
+			matrix_draw_line(50, 5, 50, 25, CL_RED);
 			
-			matrix_SetFont(Verdana25);
-			if(matrix_DrawMarquee(55, 4, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 55, 28, message, SCROLL_RIGHT_TO_LEFT, RED) == 1)
+			matrix_set_font(Verdana25);
+			if(matrix_draw_marquee(55, 4, (DISPLAY_WIDTH * DISPLAY_ACROSS) - 55, 28, message, SCROLL_RIGHT_TO_LEFT, CL_RED) == 1)
 			{
 				eTaskStat = IDLE;
 			}
@@ -136,51 +136,51 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 		case MODE_DOAMESSAGE :
 			utils_parse('\r', message, &index);
 
-			matrix_SetFont(ArialBlack16);
+			matrix_set_font(ArialBlack16);
 
 			if(nCounter < 10)
 			{
-				matrtix_DrawImage(12, 8, &doa_masjid);
+				matrix_draw_image(12, 8, &doa_masjid);
 			}
 			else if(nCounter == 10)
 			{
-				matrix_ScreenClear(BLACK);
+				matrix_clr_screen(CL_BLACK);
 			}
 			else if(nCounter > 10)
 			{
 				memset(sMessageTmp, '\0', 50);
 				memcpy(sMessageTmp, message + index[0], utils_strlen(message) - index[0] - 1);
 
-				posX = matrix_GetTextCenter(sMessageTmp);
-				if(matrix_DrawMarquee(0, 14, DISPLAY_WIDTH * DISPLAY_ACROSS, 16, sMessageTmp, SCROLL_RIGHT_TO_LEFT, RED) == 1)
+				posX = matrix_get_textcenter(sMessageTmp);
+				if(matrix_draw_marquee(0, 14, DISPLAY_WIDTH * DISPLAY_ACROSS, 16, sMessageTmp, SCROLL_RIGHT_TO_LEFT, CL_RED) == 1)
 				{
-					matrix_ScreenClear(BLACK);
+					matrix_clr_screen(CL_BLACK);
 					nCounter = 0;
 					eTaskStat = IDLE;
 				}
 			}
 			
-			matrix_SetFont(System5x7);
+			matrix_set_font(System5x7);
 			memset(sMessageTmp, '\0', 50);
 			memcpy(sMessageTmp, message, index[0]);
-			posX = matrix_GetTextCenter(sMessageTmp);
-			matrix_DrawString(posX, 2, sMessageTmp, RED);
+			posX = matrix_get_textcenter(sMessageTmp);
+			matrix_draw_string(posX, 2, sMessageTmp, CL_RED);
 			break;
 			
 		case MODE_TITLEDMESSAGE :
 			utils_parse('\r', message, &index);
 
-			matrix_SetFont(ArialBlack16);
+			matrix_set_font(ArialBlack16);
 
 			memset(sMessageTmp, '\0', 50);
 			memcpy(sMessageTmp, message, index[0]);
-			posX = matrix_GetTextCenter(sMessageTmp);
-			matrix_DrawString(posX + 5, 0, sMessageTmp, RED);
+			posX = matrix_get_textcenter(sMessageTmp);
+			matrix_draw_string(posX + 5, 0, sMessageTmp, CL_RED);
 
 			memset(sMessageTmp, '\0', 50);
 			memcpy(sMessageTmp, message + index[0], utils_strlen(message) - index[0] - 1);	
 
-			if(matrix_DrawMarquee(0, 16, DISPLAY_WIDTH * DISPLAY_ACROSS, 32, sMessageTmp, SCROLL_RIGHT_TO_LEFT, RED) == 1)
+			if(matrix_draw_marquee(0, 16, DISPLAY_WIDTH * DISPLAY_ACROSS, 32, sMessageTmp, SCROLL_RIGHT_TO_LEFT, CL_RED) == 1)
 			{
 				eTaskStat = IDLE;
 			}
@@ -190,21 +190,21 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 			memset(index, 0, 10);
 			utils_parse('\r', message, &index);
 
-			matrix_ScreenClear(BLACK);
+			matrix_clr_screen(CL_BLACK);
 
-			matrix_SetFont(ArialBlack16);
+			matrix_set_font(ArialBlack16);
 
 			memset(sMessageTmp, '\0', 50);
 			memcpy(sMessageTmp, message, index[0]);
-			posX = matrix_GetTextCenter(sMessageTmp);
-			matrix_DrawString(posX + 5, 0, sMessageTmp, RED);
+			posX = matrix_get_textcenter(sMessageTmp);
+			matrix_draw_string(posX + 5, 0, sMessageTmp, CL_RED);
 
 			memset(sMessageTmp, '\0', 50);
 			memcpy(sMessageTmp, message + index[bMsg], index[bMsg + 1] - index[bMsg] - 1);		
-			posX = matrix_GetTextCenter(sMessageTmp);
+			posX = matrix_get_textcenter(sMessageTmp);
 			if(posX < 0) posX = 0;
 
-			if(matrix_DrawMarquee(posX, 16, DISPLAY_WIDTH * DISPLAY_ACROSS, 31, sMessageTmp, SCROLL_BOTTOM_TO_TOP, RED) == 1)
+			if(matrix_draw_marquee(posX, 16, DISPLAY_WIDTH * DISPLAY_ACROSS, 31, sMessageTmp, SCROLL_BOTTOM_TO_TOP, CL_RED) == 1)
 			{
 				bMsg++;
 
@@ -215,13 +215,13 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 				}
 			}
 
-			if(matrix_GetMarqueePos() == 16)
+			if(matrix_get_marqueepos() == 16)
 			{
-				matrix_PauseMarquee(ENABLE);
+				matrix_marquee_pause(ENABLE);
 
 				if(nCounter >= 5)
 				{
-					matrix_PauseMarquee(DISABLE);
+					matrix_marquee_pause(DISABLE);
 					nCounter = 0;
 				}
 			}
@@ -236,12 +236,12 @@ eTaskStatus app_set_mode(eDisplayMode mode, char *message)
 			break;
 	}
 
-	matrix_ScreenApply();
+	matrix_set_screen();
 
 	return eTaskStat;
 }
 
-void app_check_event(eTimeEvent	*eEventRet)
+void ledmatrix_chk_event(eTimeEvent	*eEventRet)
 {
 	uint16_t	nCurrentTime	= 0;
 
@@ -258,7 +258,7 @@ void app_check_event(eTimeEvent	*eEventRet)
 	}
 }
 
-void app_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration)
+void ledmatrix_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration)
 {
 	uint16_t	i	= 0;
 	
@@ -276,7 +276,7 @@ void app_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uin
 	str[i] = '\0';
 }
 
-void app_mem_read(void)
+void ledmatrix_get_mem(void)
 {
 	uint8_t	i	= 0;
 

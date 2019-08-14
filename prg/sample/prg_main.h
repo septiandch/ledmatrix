@@ -1,20 +1,20 @@
 /**
- *  Moving Sign Display application
+ *  Led Matrix Display program
  *  Written By  : Septian D. Chandra
  *  E-mail      : septian.d.chandra@gmail.com
  *  Blog URL    : http://solderingcodes.blogspot.com
  */
  
-#ifndef _APP_MAIN_H_
-#define _APP_MAIN_H_
+#ifndef _LEDMATRIX_H_
+#define _LEDMATRIX_H_
 
-#include "dmd/dmdproc.h"
-#include "peripherals/fmem.h"
-#include "peripherals/at24cxx.h"
-#include "peripherals/rtc.h"
-#include "peripherals/usart.h"
-#include "utils.h"
 #include "pgmspace.h"
+#include "dmd/dmd_proc.h"
+#include "lib/fmem.h"
+#include "lib/at24cxx.h"
+#include "lib/rtc.h"
+#include "lib/usart.h"
+#include "lib/utils.h"
 #include "fonts/SystemFont.h"
 #include "fonts/ArialBlack16.h"
 #include "fonts/Unispace18.h"
@@ -22,8 +22,8 @@
 #include "fonts/Verdana25.h"
 #include "img/logo_masjid.h"
 #include "img/doa_masjid.h"
-#include "app_hal.h"
-#include "app_cmd.h"
+#include "ledmatrix_io.h"
+#include "ledmatrix_cmd.h"
 
 /* DEFINITIONS */
 #define MEM_BASE					0x0EA0
@@ -96,12 +96,12 @@ extern stPowerSave		stPwrSave;
 extern char				bColonState;
 
 /* Function Prototypes */
-extern void			app_init(void);
-extern void			app_mem_read(void);
-extern void			app_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration);
-extern eTaskStatus	app_set_mode(eDisplayMode mode, char *message);
-extern void			app_check_event(eTimeEvent *eEventRet);
-extern void			app_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration);
-extern void			app_get_powersave(stPowerSave *stPwrSv);
+extern void			ledmatrix_init(void);
+extern void			ledmatrix_get_mem(void);
+extern void			ledmatrix_get_message(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration);
+extern eTaskStatus	ledmatrix_set_mode(eDisplayMode mode, char *message);
+extern void			ledmatrix_chk_event(eTimeEvent *eEventRet);
+extern void			ledmatrix_set_powersave(uint8_t StartHour, uint8_t StartMinute, uint16_t Duration);
+extern void			ledmatrix_get_powersave(stPowerSave *stPwrSv);
 
-#endif /* _APP_MAIN_H_ */
+#endif /* _LEDMATRIX_H_ */

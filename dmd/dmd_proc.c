@@ -5,11 +5,11 @@
  *  Blog URL    : http://solderingcodes.blogspot.com
  */
 
-#include "dmd_lib.h"
+#include "dmd_proc.h"
 
 /* FUNCTION PROTOTYPES */
-uint16_t matrix_PixelMapping(int16_t nX, int16_t nY);
-void matrix_PixelMapCreate(void);
+uint16_t matrix_pixelmapping(int16_t nX, int16_t nY);
+void matrix_set_pixelmap(void);
 
 /* Initialize Global Variables */
 const uint8_t		*FONT					;
@@ -24,31 +24,33 @@ static uint16_t		matrix_nPixelMap[MATRIX_SIZE];
 #endif
 
 #ifdef ENABLE_DOUBLEBUFFER
-uint8_t				matrix_bDisplayBuffer[DISPLAY_SIZE * DISPLAY_MODE];
+uint8_t				matrix_bDisplayBuffer[DISPLAY_MAX_SIZE];
 #endif
 
-void matrix_Init(void)
+void matrix_init(void)
 {
 	/* Initialize Display */
-	dmd_Init();
+	dmd_prm_set_display(mode_mono, 4, 32, 16, 1, 1);
 
-    matrix_ScreenClear(BLACK);
-    matrix_PixelMapCreate();
+    matrix_clr_screen(CL_BLACK);
+    matrix_set_pixelmap();
 
-	matrix_ScreenApply();
+	matrix_set_screen();
+
+	dmd_init();
 }
 
-void matrix_SetFont(const uint8_t *font)
+void matrix_set_font(const uint8_t *font)
 {
 	FONT = font;
 }
 
-void matrix_ScreenClear(eCOLOR color)
+void matrix_clr_screen(eCOLOR color)
 {
 	/* Initialize Local Variables */
 	uint16_t 	i 	= 0	;
 	
-	for(i = 0; i < DISPLAY_SIZE * DISPLAY_MODE; i++)
+	for(i = 0; i < dmd_prm_get_dispsize() * stDispParam.bMode; i++)
 	{
 		bDisplayBuffer[i] = color;
 	}
@@ -57,10 +59,10 @@ void matrix_ScreenClear(eCOLOR color)
 	/* matrix_nMarqueePos = 0; */
 }
 
-void matrix_ScreenApply(void)
+void matrix_set_screen(void)
 {
 #ifdef ENABLE_DOUBLEBUFFER
-	memcpy(dmd_bDisplayBuffer, matrix_bDisplayBuffer, DISPLAY_SIZE * DISPLAY_MODE);
+	memcpy(dmd_bDisplayBuffer, matrix_bDisplayBuffer, dmd_prm_get_dispsize() * stDispParam.bMode);
 #endif
 }
 
@@ -69,7 +71,7 @@ void matrix_invert_color(FunctionalState state)
 	matrix_bInvertEn = state;
 }
 
-void matrix_FrameCreate(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height)
+void matrix_set_frame(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height)
 {
 	matrix_stDisplayFrame.active = ENABLE;
 	matrix_stDisplayFrame.startX = nPosX;
@@ -78,7 +80,7 @@ void matrix_FrameCreate(int16_t nPosX, int16_t nPosY, int16_t width, int16_t hei
 	matrix_stDisplayFrame.endY   = nPosY + height;
 }
 
-void matrix_FrameClear(void)
+void matrix_clr_frame(void)
 {
 	matrix_stDisplayFrame.active = DISABLE;
 	matrix_stDisplayFrame.startX = 0;
@@ -87,7 +89,7 @@ void matrix_FrameClear(void)
 	matrix_stDisplayFrame.endY   = 0;
 }
 
-void matrix_PixelMapCreate(void)
+void matrix_set_pixelmap(void)
 {
 #ifdef ENABLE_DMA
 	/* Initialize Local Variables */
@@ -95,13 +97,13 @@ void matrix_PixelMapCreate(void)
 	uint8_t	n		= 0;
 	uint8_t	index	= 0;
 	
-	while(x < DISPLAY_SCANRATE)
+	while(x < stDispParam.bScanrate)
 	{
 		x++;
 		
-		for(n = 0; n < DISPLAY_SCANRATE; n++)
+		for(n = 0; n < stDispParam.bScanrate; n++)
 		{
-			matrix_nPixelMap[index] = (DISPLAY_SCANRATE - x) + (n * DISPLAY_ACROSS * DISPLAY_HEIGHT);
+			matrix_nPixelMap[index] = (stDispParam.bScanrate - x) + (n * stDispParam.bPanelAcross * stDispParam.bHeight);
 			
 			index++;
 		}
@@ -109,28 +111,28 @@ void matrix_PixelMapCreate(void)
 #endif
 }
 
-uint16_t matrix_PixelMapping(int16_t nX, int16_t nY)
+uint16_t matrix_pixelmapping(int16_t nX, int16_t nY)
 {
 	/* Initialize Local Variables */
 	uint16_t	bytePos		= 0	;
 
 #ifdef ENABLE_DMA
-	bytePos = ((uint16_t) (nX / BYTE_SIZE) * DISPLAY_SCANRATE) + matrix_nPixelMap[nY];
+	bytePos = ((uint16_t) (nX / BYTE_SIZE) * stDispParam.bScanrate) + matrix_nPixelMap[nY];
 #else
-	bytePos =	((nY % DISPLAY_HEIGHT) * (DISPLAY_WIDTH / 8) * DISPLAY_TOTAL * DISPLAY_MODE) + ((nX / 8) * DISPLAY_MODE)
-				+ (((nY / DISPLAY_HEIGHT) * DISPLAY_ACROSS * (DISPLAY_WIDTH / 8)) * DISPLAY_MODE);
+	bytePos =	((nY % stDispParam.bHeight) * (stDispParam.bWidth / 8) * dmd_prm_get_totalpanel() * stDispParam.bMode) + ((nX / 8) * stDispParam.bMode)
+				+ (((nY / stDispParam.bHeight) * stDispParam.bPanelAcross * (stDispParam.bWidth / 8)) * stDispParam.bMode);
 #endif
 	
 	return bytePos;
 }
 
-void matrix_DrawPoint(int16_t nX, int16_t nY, eCOLOR color)
+void matrix_draw_point(int16_t nX, int16_t nY, eCOLOR color)
 {
 	/* Initialize Local Variables */
 	int16_t		bytePos		= 0	;
 	int16_t		bitPos		= 0	;
 	
-	if (nX >= DISPLAY_ACROSS * DISPLAY_WIDTH || nY >= DISPLAY_DOWN * DISPLAY_HEIGHT) return;
+	if (nX >= stDispParam.bPanelAcross * stDispParam.bWidth || nY >= stDispParam.bPanelDown * stDispParam.bHeight) return;
 	else if (nX < 0 || nY < 0) return;
 	
 	if(matrix_stDisplayFrame.active == ENABLE)
@@ -140,35 +142,34 @@ void matrix_DrawPoint(int16_t nX, int16_t nY, eCOLOR color)
 	}
 
 	/* get byte position */
-	bytePos = matrix_PixelMapping(nX, nY);
+	bytePos = matrix_pixelmapping(nX, nY);
 	bitPos = nX % 8;
 
-#if DISPLAY_MODE == MODE_RGB
-	if(color & RED) dmd_bDisplayBuffer[bytePos + 0] |= (1 << bitPos);
-	else dmd_bDisplayBuffer[bytePos + 0] &= ~(1 << bitPos);
-	
-	if(color & GREEN) dmd_bDisplayBuffer[bytePos + 1] |= (1 << bitPos);
-	else dmd_bDisplayBuffer[bytePos + 1] &= ~(1 << bitPos);
-	
-	if(color & BLUE) dmd_bDisplayBuffer[bytePos + 2] |= (1 << bitPos);
-	else dmd_bDisplayBuffer[bytePos + 2] &= ~(1 << bitPos);
-	
-#else
-	if(color != BLACK)
+	if(stDispParam.bMode == mode_rgb)
 	{
-		bDisplayBuffer[bytePos] |= (1 << bitPos);
+		if(color & CL_RED) dmd_bDisplayBuffer[bytePos + 0] |= (1 << bitPos);
+		else dmd_bDisplayBuffer[bytePos + 0] &= ~(1 << bitPos);
+		
+		if(color & CL_GREEN) dmd_bDisplayBuffer[bytePos + 1] |= (1 << bitPos);
+		else dmd_bDisplayBuffer[bytePos + 1] &= ~(1 << bitPos);
+		
+		if(color & CL_BLUE) dmd_bDisplayBuffer[bytePos + 2] |= (1 << bitPos);
+		else dmd_bDisplayBuffer[bytePos + 2] &= ~(1 << bitPos);
 	}
 	else
 	{
-		bDisplayBuffer[bytePos] &= ~(1 << bitPos);
+		if(color != CL_BLACK)
+		{
+			bDisplayBuffer[bytePos] |= (1 << bitPos);
+		}
+		else
+		{
+			bDisplayBuffer[bytePos] &= ~(1 << bitPos);
+		}
 	}
-#endif
-
-#ifdef ENABLE_DOUBLEBUFFER
-#endif
 }
 
-void matrix_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color)
+void matrix_draw_line(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color)
 {
 	/* Initialize Local Variables */
 	int16_t	dy			= y2 - y1;
@@ -199,7 +200,7 @@ void matrix_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR colo
 	dy <<= 1;     /* dy is now 2*dy */
 	dx <<= 1;     /* dx is now 2*dx */
 	
-	matrix_DrawPoint(x1, y1, color);
+	matrix_draw_point(x1, y1, color);
 	
 	if (dx > dy) 
 	{
@@ -214,7 +215,7 @@ void matrix_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR colo
 			
 			x1 += stepx;
 			fraction += dy; /* same as fraction -= 2*dy */
-			matrix_DrawPoint(x1, y1, color);
+			matrix_draw_point(x1, y1, color);
 		}
 	} 
 	else
@@ -230,31 +231,31 @@ void matrix_DrawLine(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR colo
 			
 			y1 += stepy;
 			fraction += dx;
-			matrix_DrawPoint(x1, y1, color);
+			matrix_draw_point(x1, y1, color);
 		}
 	}
 }
 
-void matrix_DrawBox(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color)
+void matrix_draw_box(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color)
 {	
-	matrix_DrawLine(x1, y1, x2, y1, color);
-	matrix_DrawLine(x1, y1, x1, y2, color);
-	matrix_DrawLine(x1, y2, x2, y2, color);
-	matrix_DrawLine(x2, y1, x2, y2, color);
+	matrix_draw_line(x1, y1, x2, y1, color);
+	matrix_draw_line(x1, y1, x1, y2, color);
+	matrix_draw_line(x1, y2, x2, y2, color);
+	matrix_draw_line(x2, y1, x2, y2, color);
 }
 
-void matrix_DrawFilledBox(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color)
+void matrix_draw_filledbox(int16_t x1, int16_t y1, int16_t x2, int16_t y2, eCOLOR color)
 {
 	/* Initialize Local Variables */
 	uint16_t	b = 0;
 	
 	for (b = x1; b <= x2; b++) 
     {
-      matrix_DrawLine(b, y1, b, y2, color);
+      matrix_draw_line(b, y1, b, y2, color);
     }
 }
 
-uint16_t matrix_GetCharWidth(const char letter)
+uint16_t matrix_get_charwidth(const char letter)
 {
 	/* Initialize Local Variables */
 	char		c			=	letter;
@@ -284,7 +285,7 @@ uint16_t matrix_GetCharWidth(const char letter)
 	return width;
 }
 
-uint16_t matrix_DrawChar(int16_t nX, int16_t nY, const char letter, eCOLOR color)
+uint16_t matrix_draw_char(int16_t nX, int16_t nY, const char letter, eCOLOR color)
 {
 	/* Initialize local variables */
 	unsigned char	c			= letter;
@@ -292,15 +293,15 @@ uint16_t matrix_DrawChar(int16_t nX, int16_t nY, const char letter, eCOLOR color
 	unsigned int	j			= 0;
 	unsigned int	k			= 0;
 	unsigned char	height		= pgm_read_byte(FONT + FONT_HEIGHT);
-	eCOLOR			eFgColor	= (matrix_bInvertEn == ENABLE) ? BLACK : color;
-	eCOLOR			eBgColor	= (matrix_bInvertEn == ENABLE) ? color : BLACK;
+	eCOLOR			eFgColor	= (matrix_bInvertEn == ENABLE) ? CL_BLACK : color;
+	eCOLOR			eBgColor	= (matrix_bInvertEn == ENABLE) ? color : CL_BLACK;
 	
-	if (nX >= (DISPLAY_WIDTH * DISPLAY_ACROSS) || nY >= (DISPLAY_HEIGHT * DISPLAY_DOWN) ) return -1;
+	if (nX >= (stDispParam.bWidth * stDispParam.bPanelAcross) || nY >= (stDispParam.bHeight * stDispParam.bPanelDown) ) return -1;
 	
 	if (c == ' ') 
 	{
-		unsigned char charWide = matrix_GetCharWidth(':');
-		matrix_DrawFilledBox(nX, nY, nX + charWide, nY + height - 1, eBgColor);
+		unsigned char charWide = matrix_get_charwidth(':');
+		matrix_draw_filledbox(nX, nY, nX + charWide, nY + height - 1, eBgColor);
 		return charWide;
 	}
 	
@@ -354,11 +355,11 @@ uint16_t matrix_DrawChar(int16_t nX, int16_t nY, const char letter, eCOLOR color
 				{
 					if (data & (1 << k)) 
 					{
-						matrix_DrawPoint(nX + j, nY + offset + k, eFgColor);
+						matrix_draw_point(nX + j, nY + offset + k, eFgColor);
 					}
 					else 
 					{
-						matrix_DrawPoint(nX + j, nY + offset + k, eBgColor);
+						matrix_draw_point(nX + j, nY + offset + k, eBgColor);
 					}
 				}
 			}
@@ -368,44 +369,44 @@ uint16_t matrix_DrawChar(int16_t nX, int16_t nY, const char letter, eCOLOR color
 	return width;
 }
 
-uint16_t matrix_GetTextCenter(char *textSource)
+uint16_t matrix_get_textcenter(char *textSource)
 {
 	uint16_t	width	= 1;
 	uint16_t	x		= 0;
     
 	for(x = 0; x < utils_strlen(textSource); x++)
 	{
-		width += matrix_GetCharWidth(textSource[x]);
+		width += matrix_get_charwidth(textSource[x]);
 		
 		/* Line gap */
 		width++;
 	}
 
- 	return (int16_t)(((DISPLAY_ACROSS * DISPLAY_WIDTH) - width) / 2);
+ 	return (int16_t)(((stDispParam.bPanelAcross * stDispParam.bWidth) - width) / 2);
 }
 
-void matrix_DrawString(int16_t nX, int16_t nY, char *bStr, eCOLOR color)
+void matrix_draw_string(int16_t nX, int16_t nY, char *bStr, eCOLOR color)
 {
 	uint16_t	i 			= 0;
 	uint16_t	strWidth	= 0;
 	uint16_t	charWide	= 0;
 	int16_t		length		= utils_strlen(bStr);
 	uint16_t	height		= pgm_read_byte(FONT + FONT_HEIGHT);
-	eCOLOR		eBgColor	= (matrix_bInvertEn == ENABLE) ? color : BLACK;
+	eCOLOR		eBgColor	= (matrix_bInvertEn == ENABLE) ? color : CL_BLACK;
 	
-	if (nX >= DISPLAY_ACROSS * DISPLAY_WIDTH || nY >= DISPLAY_DOWN * DISPLAY_HEIGHT) return;
+	if (nX >= stDispParam.bPanelAcross * stDispParam.bWidth || nY >= stDispParam.bPanelDown * stDispParam.bHeight) return;
 	
 	if (nY + height < 0) return;
 	
-	matrix_DrawLine(nX - 1 , nY, nX - 1 , nY + height - 1, eBgColor);
+	matrix_draw_line(nX - 1 , nY, nX - 1 , nY + height - 1, eBgColor);
 	
 	for(i = 0; i < length; i++) 
 	{
-		charWide = matrix_DrawChar(nX + strWidth, nY, bStr[i], color);
+		charWide = matrix_draw_char(nX + strWidth, nY, bStr[i], color);
 		if (charWide > 0) 
 		{
 			strWidth += charWide ;
-			matrix_DrawLine(nX + strWidth , nY, nX + strWidth , nY + height - 1, eBgColor);
+			matrix_draw_line(nX + strWidth , nY, nX + strWidth , nY + height - 1, eBgColor);
 			strWidth++;
 		} 
 		else if (charWide < 0) 
@@ -413,26 +414,26 @@ void matrix_DrawString(int16_t nX, int16_t nY, char *bStr, eCOLOR color)
 			return;
 		}
 	
-		if ((nX + strWidth) >= DISPLAY_WIDTH * DISPLAY_ACROSS || nY >= DISPLAY_HEIGHT * DISPLAY_DOWN) return;
+		if ((nX + strWidth) >= stDispParam.bWidth * stDispParam.bPanelAcross || nY >= stDispParam.bHeight * stDispParam.bPanelDown) return;
 	}
 }
 
-void matrix_PauseMarquee(FunctionalState state)
+void matrix_marquee_pause(FunctionalState state)
 {
 	matrix_bMarqueePause = state;
 }
 
-uint16_t matrix_GetMarqueePos(void)
+uint16_t matrix_get_marqueepos(void)
 {
 	return matrix_nMarqueePos;
 }
 
-void matrix_ResetMarqueePos(void)
+void matrix_clr_marqueepos(void)
 {
 	matrix_nMarqueePos = 0;
 }
 
-uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height, char *bStr, eMARQUEEDIR direction, eCOLOR color)
+uint8_t matrix_draw_marquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t height, char *bStr, eMARQUEEDIR direction, eCOLOR color)
 {
 	int16_t		i				= 0;
 	int16_t		nMarqueePosTmp	= matrix_nMarqueePos;
@@ -454,7 +455,7 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 		{
 			for(i = 0; i < utils_strlen(bStr); i++)
 			{
-				matrix_nMarqueeWidth += matrix_GetCharWidth(bStr[i]);
+				matrix_nMarqueeWidth += matrix_get_charwidth(bStr[i]);
 				
 				/* Plus char gap */
 				matrix_nMarqueeWidth += 1;
@@ -472,18 +473,18 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 	}
 	
 	/* Draw String in frame */
-	matrix_FrameCreate(nPosX, nPosY, width, height);
+	matrix_set_frame(nPosX, nPosY, width, height);
 	
 	if(direction == SCROLL_RIGHT_TO_LEFT || direction == SCROLL_LEFT_TO_RIGHT)
 	{
-		matrix_DrawString(matrix_nMarqueePos, nPosY, bStr, color);
+		matrix_draw_string(matrix_nMarqueePos, nPosY, bStr, color);
 	}
 	else if(direction == SCROLL_TOP_TO_BOTTOM || direction == SCROLL_BOTTOM_TO_TOP)
 	{
-		matrix_DrawString(nPosX, matrix_nMarqueePos, bStr, color);
+		matrix_draw_string(nPosX, matrix_nMarqueePos, bStr, color);
 	}
 	
-	matrix_FrameClear();
+	matrix_clr_frame();
 	
 	/* Set marquee limit and returns ends value */
 	switch(direction)
@@ -537,7 +538,7 @@ uint8_t matrix_DrawMarquee(int16_t nPosX, int16_t nPosY, int16_t width, int16_t 
 	return 0;
 }
 
-void matrtix_DrawImage(uint16_t posX, uint16_t posY, uint8_t *data)
+void matrix_draw_image(uint16_t posX, uint16_t posY, uint8_t *data)
 {
 	/* Initialize Local Variables */
 	int16_t		img_width	= pgm_read_byte(data + 0);
@@ -559,11 +560,11 @@ void matrtix_DrawImage(uint16_t posX, uint16_t posY, uint8_t *data)
 			{
 				if(bitval & 0x01)
         		{
-					matrix_DrawPoint(posX + hpos + bitpos, posY + vpos, RED);
+					matrix_draw_point(posX + hpos + bitpos, posY + vpos, CL_RED);
 				}
         		else
         		{
-					matrix_DrawPoint(posX + hpos + bitpos, posY + vpos, BLACK);
+					matrix_draw_point(posX + hpos + bitpos, posY + vpos, CL_BLACK);
 				}
 
         		bitval >>= 1;
@@ -574,12 +575,12 @@ void matrtix_DrawImage(uint16_t posX, uint16_t posY, uint8_t *data)
 	}
 }
 
-void matrix_SetBrightness(uint8_t percentage)
+void matrix_set_brightness(uint8_t percentage)
 {
 	if(percentage > 99)
 	{
 		percentage = 99;
 	}
 
-	dmd_SetBrightness(percentage);
+	dmd_set_brightness(percentage);
 }

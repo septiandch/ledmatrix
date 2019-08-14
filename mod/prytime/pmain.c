@@ -8,7 +8,7 @@
   */
 
 #include "stm32f10x.h"
-#include "platform_config.h"
+#include "platform_conf.h"
 #include "utils.h"
 #include "dmd/dmdhal.h"
 #include "dmd/dmdproc.h"
@@ -69,7 +69,7 @@ int main(void)
 	/* Startup Delay */
 	utils_Delay(3000);
 	
-	matrix_Init();
+	matrix_init();
 	
 	usart_Init(9600);
 	
@@ -100,7 +100,7 @@ int main(void)
 						eDispStatus = IDLE;
 						pdisplay_nCounter = 0;
 						
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 					}
 					break;
 					
@@ -110,7 +110,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= param_iteration)
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 						
 						eDispStatus = IDLE;
@@ -123,7 +123,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= param_iteration * 5)
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 											
 						eDispStatus = IDLE;
@@ -136,7 +136,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= param_iteration * 5)
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 											
 						eDispStatus = IDLE; 
@@ -148,7 +148,7 @@ int main(void)
 				/*--------------------------------------------*/
 				
 				case SEQ_ENTER_EVENT :
-					matrix_ScreenClear(BLACK);
+					matrix_clr_screen(CL_BLACK);
 					
 					/* Enter Adzan Counter Setup */
 					param_mode = SEQ_SET_ADZANCOUNTER;
@@ -168,7 +168,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= 60 || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 						bButtonState = '\0';
 						
@@ -187,7 +187,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= 3 || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 						
 						if(nPTimeSel == 0 || nPTimeSel == 2) 
@@ -216,7 +216,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= (bPTimeIdle[0] * 60) || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 						bButtonState = '\0';
 						
@@ -243,7 +243,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= (nIqamahList[nPTimeSel] * 60) || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 						bButtonState = '\0';
 						
@@ -261,7 +261,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= (bPTimeIdle[1] * 60) || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_nCounter = 0;
 						bButtonState = '\0';
 						
@@ -276,7 +276,7 @@ int main(void)
 					
 					if(pdisplay_nCounter >= nCounter || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
 					{
-						matrix_ScreenClear(BLACK);
+						matrix_clr_screen(CL_BLACK);
 						pdisplay_SetBrightness(eeprom_ReadByte(MEM_BRIGHTNESS));
 						pdisplay_nCounter = 0;
 						bButtonState = '\0';
@@ -381,7 +381,7 @@ int main(void)
 				case EVENT_PWRSAVE :
 					nCounter = (stPwrSave.Duration  * 60);
 					param_mode = SEQ_POWERSAVE;
-					matrix_ScreenClear(BLACK);
+					matrix_clr_screen(CL_BLACK);
 					pdisplay_SetBrightness(1);
 					break;
 			}
@@ -443,7 +443,7 @@ int main(void)
 					nTask = usart_sMessage[usart_nIndex - 3] - '0';
 					eDispStatus = IDLE;
 					pdisplay_nCounter = 0;
-					matrix_ScreenClear(BLACK);
+					matrix_clr_screen(CL_BLACK);
 					
 					bCmdState = 1;
 					usart_puts("Message Update OK\n\r");

@@ -1,21 +1,21 @@
 /**
- *  Moving Sign Display data processing
+ *  Led Matrix Display R/W Command Task
  *  Written By  : Septian D. Chandra
  *  E-mail      : septian.d.chandra@gmail.com
  *  Blog URL    : http://solderingcodes.blogspot.com
  */
 
-#include "app_cmd.h"
+#include "cmd.h"
 
-void app_command_check()
+void cmd_check()
 {
 	if(usart_get_lastchar() == '#')
 	{
-		app_command_write();
+		cmd_write();
 	}
 }
 
-void app_command_write()
+void cmd_write()
 {
 	volatile char	sMessageTmp[COMMAND_MAX_LEN + 3]	= "";
 	uint8_t			bCmdStat							= 1;
@@ -39,7 +39,7 @@ void app_command_write()
 			usart_message_clear();
 
 			/* Update Messages Buffer */
-			app_mem_read();
+			ledmatrix_get_mem();
 			break;
 
 		/* RTC Command */
@@ -75,7 +75,7 @@ void app_command_write()
 					eeprom_write_byte(MEM_BRIGHTNESS, ((usart_sMessage[3] - '0') * 10) + (usart_sMessage[4] - '0') + 1);
 					utils_delay(10);
 					
-					matrix_SetBrightness(eeprom_read_byte(MEM_BRIGHTNESS));
+					matrix_set_brightness(eeprom_read_byte(MEM_BRIGHTNESS));
 					
 					usart_puts("Brightness Update OK\n\r");
 				}
@@ -92,11 +92,11 @@ void app_command_write()
 		case '$' :
 			if(usart_nIndex - 1 == 8)
 			{
-				app_set_powersave(( (usart_sMessage[0] - '0') * 10)	+ usart_sMessage[1] - '0',
+				ledmatrix_set_powersave(( (usart_sMessage[0] - '0') * 10)	+ usart_sMessage[1] - '0',
 									( (usart_sMessage[2] - '0') * 10)	+ usart_sMessage[3] - '0',
 									( (usart_sMessage[4] - '0') * 100)	+ ((usart_sMessage[5] - '0') * 10) + usart_sMessage[6] - '0');
 				
-				app_get_powersave(&stPwrSave);
+				ledmatrix_get_powersave(&stPwrSave);
 				
 				usart_puts("Powersave Update OK\n\r");
 			}
@@ -134,7 +134,7 @@ void app_command_write()
 	}
 }
 
-void app_command_read(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration)
+void cmd_read(uint8_t task, char *str, uint8_t *mode, uint8_t *delay, uint8_t *iteration)
 {
 #ifdef USE_FMEM
 	uint8_t DataHi = 0;

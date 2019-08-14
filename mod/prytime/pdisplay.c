@@ -21,7 +21,7 @@ static char	sMessageBuff[100]		= "";
 uint16_t	pdisplay_nCounter 		= 0;
 char		pdisplay_bColonState	= ' ';
 
-stDispColor	stDisplayColor			= {BLACK, BLACK, BLACK, BLACK};
+stDispColor	stDisplayColor			= {CL_BLACK, CL_BLACK, CL_BLACK, CL_BLACK};
 
 void pdisplay_Init(void)
 {
@@ -43,9 +43,9 @@ void pdisplay_SetMode(eDisplayMode mode, char *message, uint8_t nPTimeList)
 	switch(mode)
 	{
 		case MODE_POWERSAVE :
-			matrix_SetFont(System5x7);
+			matrix_set_font(System5x7);
 			utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			matrix_DrawString(55, 4, sMessageBuff, stDisplayColor.clock);
+			matrix_draw_string(55, 4, sMessageBuff, stDisplayColor.clock);
 			
 			if(pdisplay_bColonState != bColonState)
 			{
@@ -55,41 +55,41 @@ void pdisplay_SetMode(eDisplayMode mode, char *message, uint8_t nPTimeList)
 			break;
 			
 		case MODE_BIGMESSAGE :
-			matrix_SetFont(Arial16);
+			matrix_set_font(Arial16);
 			utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			matrix_DrawString(0, 0, sMessageBuff, stDisplayColor.clock);
+			matrix_draw_string(0, 0, sMessageBuff, stDisplayColor.clock);
 			
-			pdisplay_nCounter += matrix_DrawMarquee(40, 0, 120, 15, message, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
+			pdisplay_nCounter += matrix_draw_marquee(40, 0, 120, 15, message, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
 			break;
 			
 		case MODE_SMALLMESSAGE :
-			matrix_SetFont(System5x7);
+			matrix_set_font(System5x7);
 			utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
-			matrix_DrawString(0, 0, sMessageBuff, stDisplayColor.clock);
+			matrix_draw_string(0, 0, sMessageBuff, stDisplayColor.clock);
 			
-			pdisplay_nCounter += matrix_DrawMarquee(0, 8, DISPLAY_WIDTH * DISPLAY_ACROSS, 15, message, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
+			pdisplay_nCounter += matrix_draw_marquee(0, 8, DISPLAY_WIDTH * DISPLAY_ACROSS, 15, message, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
 						
 			utils_Timestamp(stPTime[nPTimeList].hour, stPTime[nPTimeList].minute, NONE, ':', &sMessageBuff);
-			matrix_DrawString(130, 0, sMessageBuff, stDisplayColor.ptime);
+			matrix_draw_string(130, 0, sMessageBuff, stDisplayColor.ptime);
 			
 			utils_Concat("   ", sPrayerTime[nPTimeList], "", &sMessageBuff);
-			matrix_DrawString(126 - (strlen(sMessageBuff) * 6), 0, sMessageBuff, stDisplayColor.ptime);
+			matrix_draw_string(126 - (strlen(sMessageBuff) * 6), 0, sMessageBuff, stDisplayColor.ptime);
 			break;
 			
 		case MODE_DATETIME :
-			matrix_SetFont(Arial16);
+			matrix_set_font(Arial16);
 			utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageTmp);
-			matrix_DrawString(0, 0, sMessageTmp, stDisplayColor.clock);
+			matrix_draw_string(0, 0, sMessageTmp, stDisplayColor.clock);
 						
-			matrix_SetFont(System5x7);
+			matrix_set_font(System5x7);
 			utils_Timestamp(stPTime[nPTimeList].hour, stPTime[nPTimeList].minute, NONE, ':', &sMessageTmp);
 			utils_Concat("  ", sPrayerTime[nPTimeList], " ", &sMessageBuff);
 			utils_Concat(sMessageBuff, sMessageTmp, "  ", &sMessageBuff);
-			matrix_DrawString(matrix_GetTextCenter(&sMessageBuff) + 20, 0, sMessageBuff, stDisplayColor.ptime);
+			matrix_draw_string(matrix_get_textcenter(&sMessageBuff) + 20, 0, sMessageBuff, stDisplayColor.ptime);
 			
 			utils_Timestamp(stRTime.date, stRTime.month, 2000 + stRTime.year, '-', &sMessageTmp);
 			utils_Concat(sWeekday[stRTime.day - 1], ",", sMessageTmp, &sMessageBuff);
-			matrix_DrawString(matrix_GetTextCenter(&sMessageBuff) + 20, 9, sMessageBuff, stDisplayColor.date);
+			matrix_draw_string(matrix_get_textcenter(&sMessageBuff) + 20, 9, sMessageBuff, stDisplayColor.date);
 			
 			if(pdisplay_bColonState != bColonState)
 			{
@@ -99,15 +99,15 @@ void pdisplay_SetMode(eDisplayMode mode, char *message, uint8_t nPTimeList)
 			break;
 			
 		case MODE_HIJRIDATE :
-			matrix_SetFont(Arial16);
+			matrix_set_font(Arial16);
 			utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageTmp);
-			matrix_DrawString(0, 0, sMessageTmp, stDisplayColor.clock);
+			matrix_draw_string(0, 0, sMessageTmp, stDisplayColor.clock);
 						
-			matrix_SetFont(System5x7);
+			matrix_set_font(System5x7);
 			utils_Timestamp(stPTime[nPTimeList].hour, stPTime[nPTimeList].minute, NONE, ':', &sMessageTmp);
 			utils_Concat("  ", sPrayerTime[nPTimeList], " ", &sMessageBuff);
 			utils_Concat(sMessageBuff, sMessageTmp, "  ", &sMessageBuff);
-			matrix_DrawString(matrix_GetTextCenter(&sMessageBuff) + 20, 0, sMessageBuff, stDisplayColor.ptime);
+			matrix_draw_string(matrix_get_textcenter(&sMessageBuff) + 20, 0, sMessageBuff, stDisplayColor.ptime);
 			
 			ptime_GetHijriah(&stRTime, &stHTime);
 			utils_IntToString(stHTime.date, 1, sMessageTmp);
@@ -115,7 +115,7 @@ void pdisplay_SetMode(eDisplayMode mode, char *message, uint8_t nPTimeList)
 			
 			utils_Concat(sMessageTmp, " ", sHijriMonth[stHTime.month], &sMessageBuff);
 			utils_Concat(sMessageBuff, " ", sMessageTmp2, &sMessageBuff);
-			matrix_DrawString(matrix_GetTextCenter(&sMessageBuff) + 20, 9, sMessageBuff, stDisplayColor.date);
+			matrix_draw_string(matrix_get_textcenter(&sMessageBuff) + 20, 9, sMessageBuff, stDisplayColor.date);
 			
 			if(pdisplay_bColonState != bColonState)
 			{
@@ -125,46 +125,46 @@ void pdisplay_SetMode(eDisplayMode mode, char *message, uint8_t nPTimeList)
 			break;
 			
 		case MODE_PRAYERTIME :
-			matrix_SetFont(Arial16);
+			matrix_set_font(Arial16);
 			if(nPTimeList == 0) utils_Concat("MEMASUKI WAKTU ", " ", sPrayerTime[nPTimeList], &sMessageBuff);
 			else utils_Concat("MEMASUKI WAKTU ", "SHALAT ", sPrayerTime[nPTimeList], &sMessageBuff);
 			
-			pdisplay_nCounter += matrix_DrawMarquee(0, 0, 160, 15, sMessageBuff, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
+			pdisplay_nCounter += matrix_draw_marquee(0, 0, 160, 15, sMessageBuff, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
 			break;
 			
 		case MODE_COUNTDOWN :			
-			matrix_SetFont(System5x7);
+			matrix_set_font(System5x7);
 			
 			if(nPTimeList != 10)
 			{
-				matrix_DrawLine(3, 2, 10, 2, stDisplayColor.counter);
-				matrix_DrawLine(3, 2, 3, 13, stDisplayColor.counter);
-				matrix_DrawLine(3, 13, 56, 13, stDisplayColor.counter);
+				matrix_draw_line(3, 2, 10, 2, stDisplayColor.counter);
+				matrix_draw_line(3, 2, 3, 13, stDisplayColor.counter);
+				matrix_draw_line(3, 13, 56, 13, stDisplayColor.counter);
 				
-				matrix_DrawLine(148, 2, 156, 2, stDisplayColor.counter);
-				matrix_DrawLine(156, 2, 156, 13, stDisplayColor.counter);
-				matrix_DrawLine(102, 13, 156, 13, stDisplayColor.counter);
+				matrix_draw_line(148, 2, 156, 2, stDisplayColor.counter);
+				matrix_draw_line(156, 2, 156, 13, stDisplayColor.counter);
+				matrix_draw_line(102, 13, 156, 13, stDisplayColor.counter);
 				
 				utils_Concat("MEMASUKI WAKTU", " ", sPrayerTime[nPTimeList], &sMessageBuff);
 				
-				matrix_DrawString(matrix_GetTextCenter(sMessageBuff), 0, sMessageBuff, stDisplayColor.counter);
+				matrix_draw_string(matrix_get_textcenter(sMessageBuff), 0, sMessageBuff, stDisplayColor.counter);
 			}
 			else
 			{
-				matrix_DrawLine(51, 2, 56, 2, stDisplayColor.counter);
-				matrix_DrawLine(51, 2, 51, 13, stDisplayColor.counter);
-				matrix_DrawLine(51, 13, 56, 13, stDisplayColor.counter);
+				matrix_draw_line(51, 2, 56, 2, stDisplayColor.counter);
+				matrix_draw_line(51, 2, 51, 13, stDisplayColor.counter);
+				matrix_draw_line(51, 13, 56, 13, stDisplayColor.counter);
 				
-				matrix_DrawLine(102, 2, 107, 2, stDisplayColor.counter);
-				matrix_DrawLine(107, 2, 107, 13, stDisplayColor.counter);
-				matrix_DrawLine(102, 13, 107, 13, stDisplayColor.counter);
+				matrix_draw_line(102, 2, 107, 2, stDisplayColor.counter);
+				matrix_draw_line(107, 2, 107, 13, stDisplayColor.counter);
+				matrix_draw_line(102, 13, 107, 13, stDisplayColor.counter);
 				
-				matrix_DrawString(matrix_GetTextCenter("IQAMAH"), 0, "IQAMAH", stDisplayColor.counter);
+				matrix_draw_string(matrix_get_textcenter("IQAMAH"), 0, "IQAMAH", stDisplayColor.counter);
 			}
 			
 			utils_Timestamp	((nPTimeCounter / 60), (nPTimeCounter % 60), NONE, bColonState, &sMessageTmp);
 			utils_Concat("-", sMessageTmp, "", &sMessageBuff);
-			matrix_DrawString(matrix_GetTextCenter(&sMessageBuff), 9, sMessageBuff, stDisplayColor.counter);
+			matrix_draw_string(matrix_get_textcenter(&sMessageBuff), 9, sMessageBuff, stDisplayColor.counter);
 			
 			if(pdisplay_bColonState != bColonState)
 			{

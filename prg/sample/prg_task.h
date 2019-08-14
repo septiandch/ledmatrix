@@ -1,5 +1,5 @@
 /**
- *  DMD Hardware Configuration
+ *  Ledmatrix Hardware Configuration
  *  Written By  : Septian D. Chandra
  *  E-mail      : septian.d.chandra@gmail.com
  *  Blog URL    : http://solderingcodes.blogspot.com
@@ -8,9 +8,18 @@
 #ifndef _DMD_CONF_H_
 #define _DMD_CONF_H_
 
-#include "prg/prg_conf.h"
+#include "brdtyp/brd_DMD19.h"
 
-#if defined(BRDTYP_DMD19)
+/*----- Display Configuration -----*/
+#define DISPLAY_MODE				MODE_MONO	/* Mono = 1 , Tri = 2, RGB = 3 */
+#define DISPLAY_SCANRATE			4	/* 4 = 1/4 , 8 = 1/8, 16 = 1/16 */
+#define DISPLAY_WIDTH       		32
+#define DISPLAY_HEIGHT      		16
+#define DISPLAY_ACROSS      		1
+#define DISPLAY_DOWN        		1
+#define DISPLAY_ROWSIZE        		(DISPLAY_WIDTH / 8) /* 1 byte = 8 bit */
+#define DISPLAY_TOTAL       		(DISPLAY_ACROSS * DISPLAY_DOWN)
+#define DISPLAY_SIZE        		(DISPLAY_ROWSIZE * DISPLAY_HEIGHT * DISPLAY_TOTAL) /* Size in Bytes */
 
 /*----- HUB type -----*/
 /* #define DMD_HUB75 */
@@ -53,7 +62,6 @@
 #	define DMD_PIN_DAT				BRD_GPIO_PIN_DAT
 #	define DMD_PIN_A     			BRD_GPIO_PIN_A
 #	define DMD_PIN_B     			BRD_GPIO_PIN_B
-#	define DMD_PIN_C     			(0) /* Not available */
 
 #	define DMD_EN_APBClockCmd		BRD_GPIO_EN_APBClockCmd
 #	define DMD_RCC_EN				BRD_GPIO_RCC_EN
@@ -87,11 +95,9 @@
 #endif
 
 #if defined(ENABLE_SPI)
-#	define DMD_SPI_APBClockCmd		BRD_SPI_APBClockCmd
+#	define DMI_SPI_APBClockCmd		BRD_SPI_APBClockCmd
 #	define DMD_SPI_RCC				BRD_SPI_RCC
 #	define DMD_SPI					BRD_SPI
 #endif
 
-#endif /* #ifdef BRDTYP_DMD19 */
-
-#endif	/* _DMD_CONF_H_ */
+#endif	/* _DMD_CONF_H */

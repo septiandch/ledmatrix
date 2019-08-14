@@ -8,14 +8,14 @@
 #include "dmd_hal.h"
 
 /* GLOBAL VARIABLES */
-uint8_t dmd_bDisplayBuffer[DISPLAY_SIZE * DISPLAY_MODE];
+uint8_t dmd_bDisplayBuffer	[DISPLAY_MAX_SIZE];
 uint8_t dmd_bDisplayScan	= 0;
 
 #ifdef ENABLE_TIM
 uint16_t CCR_Val = 6000;
 #endif
 
-void dmd_Init()
+void dmd_init()
 {
     GPIO_InitTypeDef		GPIO_InitStructure;
 	TIM_TimeBaseInitTypeDef	TIM_TimeBaseStructure;
@@ -25,23 +25,23 @@ void dmd_Init()
     
 #if defined(DMD_HUB12)
 	/*  GPIO RCC */
-	RCC_APB2PeriphClockCmd(DMD_GPIO_RCC, ENABLE);
+	DMD_APBClockCmd(DMD_RCC, ENABLE);
 
 #	if defined(ENABLE_SPI)
 	/*  SPI RCC */
-    RCC_APB2PeriphClockCmd(DMD_SPI_RCC, ENABLE);
+    SPI_APBClockCmd(DMD_SPI_RCC, ENABLE);
 	
     /* Initialize GPIO pins for MOSI, MISO, and SCK (Alternate Mode) */
 	GPIO_InitStructure.GPIO_Pin		= DMD_PIN_CLK | DMD_PIN_DAT;
 	GPIO_InitStructure.GPIO_Speed	= GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode	= GPIO_Mode_AF_PP;
-	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
     
     /* GPIO pin for EN, SS (LAT) & A, B (Output Mode) */
 	GPIO_InitStructure.GPIO_Pin		= DMD_PIN_LAT | DMD_PIN_A | DMD_PIN_B;
 	GPIO_InitStructure.GPIO_Speed	= GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode	= GPIO_Mode_Out_PP;
-	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
     
     /* Initialize SPI */
 	SPI_InitStructure.SPI_Direction			= SPI_Direction_1Line_Tx;
@@ -63,7 +63,7 @@ void dmd_Init()
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_CLK | DMD_PIN_DAT | DMD_PIN_LAT | DMD_PIN_A | DMD_PIN_B;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(DMD_PIN_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PORT, &GPIO_InitStructure);
 #	endif
 
 #	if defined(ENABLE_DMA)
@@ -101,19 +101,19 @@ void dmd_Init()
 	uint16_t ChannelPulse = (uint16_t) (((uint32_t) 5 * (TimerPeriod - 1)) / 10);
 
 	/*  GPIO EN RCC */
-	RCC_APB2PeriphClockCmd(DMD_GPIO_EN_RCC, ENABLE);
+	DMD_EN_APBClockCmd(DMD_RCC_EN, ENABLE);
 
 	/* PWM_TIM clock enable */
-	RCC_APB1PeriphClockCmd(PWM_TIM_RCC, ENABLE);
+	PWM_TIM_APBClockCmd(PWM_TIM_RCC, ENABLE);
 	
 	/* Alternative Function IO clock enable */
-	RCC_APB2PeriphClockCmd(PWM_AFIO_RCC, ENABLE);
+	PWM_AFIO_APBClockCmd(PWM_AFIO_RCC, ENABLE);
 	
     /* GPIO pin init for EN */
 	GPIO_InitStructure.GPIO_Pin = DMD_PIN_EN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(DMD_PIN_EN_PORT, &GPIO_InitStructure);
+	GPIO_Init(DMD_PORT_EN, &GPIO_InitStructure);
 	
 	/* Time Base configuration */
 	TIM_TimeBaseStructure.TIM_Prescaler = 0;
@@ -155,7 +155,7 @@ void dmd_Init()
 
 #if defined(ENABLE_TIM)
 	/* TIM clock enable */
-	RCC_APB1PeriphClockCmd(TIMx_RCC, ENABLE);
+	TIMx_APBClockCmd(TIMx_RCC, ENABLE);
 	
 	/* Time base configuration */
 	TIM_TimeBaseStructure.TIM_Period = 65535;
@@ -233,7 +233,7 @@ void DMA1_Channel3_IRQHandler(void)
 		DMA_ClearITPendingBit(DMA1_IT_TC3);
 		DMA_Cmd(SPI_MASTER_Tx_DMA_Channel, DISABLE);
 		
-		dmd_DisplayScan();
+		dmd_display_scan();
 	}
 #endif
 }
@@ -241,11 +241,11 @@ void DMA1_Channel3_IRQHandler(void)
 void SysTick_Handler(void)
 {
 #if defined(ENABLE_DMA) && defined(DMD_HUB12)
-	uint32_t offset = (DISPLAY_WIDTH / BYTE_SIZE) * DISPLAY_TOTAL * DISPLAY_SCANRATE;
+	uint32_t offset = (stDispParam.bWidth / BYTE_SIZE) * dmd_prm_get_totalpanel() * stDispParam.bScanrate;
 
 	dmd_DMAStart(&dmd_bDisplayBuffer[offset * dmd_bDisplayScan], offset);
 #else
-	dmd_DisplayScan();
+	dmd_display_scan();
 #endif
 }
 
@@ -257,18 +257,18 @@ void TIMx_IRQHandler(void)
     	TIM_ClearITPendingBit(TIMx, TIM_IT_Update);
 
 #	if defined(ENABLE_DMA) && defined(DMD_HUB12)
-		uint32_t offset = (DISPLAY_WIDTH / BYTE_SIZE) * DISPLAY_TOTAL * DISPLAY_SCANRATE;
+		uint32_t offset = (stDispParam.bWidth / BYTE_SIZE) * dmd_prm_get_totalpanel() * stDispParam.bScanrate;
 
 		dmd_DMAStart(&dmd_bDisplayBuffer[offset * dmd_bDisplayScan], offset);
 	
 #	else
-		dmd_DisplayScan();
+		dmd_display_scan();
 #	endif
 	}
 #endif
 }
 
-void dmd_SendData(uint8_t data)
+void dmd_send_data(uint8_t data)
 {	
 #if defined(ENABLE_SPI) && defined(DMD_HUB12)
 	SPI_I2S_SendData(DMD_SPI, data);
@@ -283,11 +283,11 @@ void dmd_SendData(uint8_t data)
     {
         if(data & 0x01)
         {
-			DMD_PIN_PORT->BRR  = DMD_PIN_DAT;
+			DMD_PORT->BRR  = DMD_PIN_DAT;
 		}
         else
         {
-			DMD_PIN_PORT->BSRR = DMD_PIN_DAT;
+			DMD_PORT->BSRR = DMD_PIN_DAT;
 		}
 
         data >>= 1;
@@ -296,7 +296,7 @@ void dmd_SendData(uint8_t data)
 #endif
 }
 
-void dmd_SendData75(uint16_t nBufferHi, uint16_t nBufferLo)
+void dmd_send_data_rgb(uint16_t nBufferHi, uint16_t nBufferLo)
 {	
 #if defined(DMD_HUB75)
 	uint8_t		i			= 0;
@@ -327,7 +327,7 @@ void dmd_SendData75(uint16_t nBufferHi, uint16_t nBufferLo)
 #endif
 }
 
-void dmd_SetBrightness(uint8_t percentage)
+void dmd_set_brightness(uint8_t percentage)
 {
 #ifdef ENABLE_PWM
 	uint32_t value = (uint32_t)((uint32_t)(PWM_PERIOD * percentage) / 100);
@@ -336,34 +336,34 @@ void dmd_SetBrightness(uint8_t percentage)
 #endif
 }
 
-void dmd_DisplayScan()
+void dmd_display_scan()
 {	    
 #if !defined(ENABLE_DMA) && defined(DMD_HUB12)
     uint16_t 	i = 0;
-    uint16_t 	rowsize = (DISPLAY_WIDTH / 8) * DISPLAY_TOTAL;
+    uint16_t 	rowsize = (stDispParam.bWidth / 8) * dmd_prm_get_totalpanel();
     uint16_t 	offsetRow1 = rowsize * dmd_bDisplayScan;
-    uint16_t 	offsetRow2 = offsetRow1 + (rowsize * DISPLAY_SCANRATE);
-    uint16_t 	offsetRow3 = offsetRow2 + (rowsize * DISPLAY_SCANRATE);
-    uint16_t 	offsetRow4 = offsetRow3 + (rowsize * DISPLAY_SCANRATE);
+    uint16_t 	offsetRow2 = offsetRow1 + (rowsize * stDispParam.bScanrate);
+    uint16_t 	offsetRow3 = offsetRow2 + (rowsize * stDispParam.bScanrate);
+    uint16_t 	offsetRow4 = offsetRow3 + (rowsize * stDispParam.bScanrate);
 	uint32_t	wGpio_Temp	= 0;
     
     for (i = 0; i < rowsize; i++) 
     {
-		dmd_SendData(dmd_bDisplayBuffer[offsetRow4 + i]);
-		dmd_SendData(dmd_bDisplayBuffer[offsetRow3 + i]);
-		dmd_SendData(dmd_bDisplayBuffer[offsetRow2 + i]);
-		dmd_SendData(dmd_bDisplayBuffer[offsetRow1 + i]);
+		dmd_send_data(dmd_bDisplayBuffer[offsetRow4 + i]);
+		dmd_send_data(dmd_bDisplayBuffer[offsetRow3 + i]);
+		dmd_send_data(dmd_bDisplayBuffer[offsetRow2 + i]);
+		dmd_send_data(dmd_bDisplayBuffer[offsetRow1 + i]);
     }
 
 #elif defined(DMD_HUB75)
-	uint16_t	offsetHi	= DISPLAY_ROWSIZE * DISPLAY_ACROSS * DISPLAY_MODE * dmd_bDisplayScan;
-    uint16_t	offsetLo	= DISPLAY_ROWSIZE * DISPLAY_ACROSS * DISPLAY_MODE * (dmd_bDisplayScan + 8);
+	uint16_t	offsetHi	= dmd_prm_get_rowsize() * stDispParam.bPanelAcross * stDispParam.bMode * dmd_bDisplayScan;
+    uint16_t	offsetLo	= dmd_prm_get_rowsize() * stDispParam.bPanelAcross * stDispParam.bMode * (dmd_bDisplayScan + 8);
     uint16_t 	i			= 0;
 	uint32_t	wGpio_Temp	= 0;
 
-    for (i = 0; i < DISPLAY_ROWSIZE * DISPLAY_ACROSS * DISPLAY_MODE; i += DISPLAY_MODE) 
+    for (i = 0; i < dmd_prm_get_rowsize() * stDispParam.bPanelAcross * stDispParam.bMode; i += stDispParam.bMode) 
     {
-		dmd_SendData75(offsetHi + i, offsetLo + i);
+		dmd_send_data_rgb(offsetHi + i, offsetLo + i);
     }
 #endif
 	
@@ -381,8 +381,6 @@ void dmd_DisplayScan()
 		case 3 :
 			wGpio_Temp = DMD_PIN_A | DMD_PIN_B;
 			break;
-			
-#if DISPLAY_SCANRATE > 4
 		case 4 :
 			wGpio_Temp = DMD_PIN_C;
 			break;
@@ -395,15 +393,14 @@ void dmd_DisplayScan()
 		case 7 :
 			wGpio_Temp = DMD_PIN_A | DMD_PIN_B | DMD_PIN_C;
 			break;
-#endif
 	}
 	
-	DMD_PIN_PORT->ODR = (DMD_PIN_PORT->ODR & DMD_PORT_MASK) | wGpio_Temp;
+	DMD_PORT->ODR = (DMD_PORT->ODR & DMD_PORT_MASK) | wGpio_Temp;
 	
 	DMD_LATCH();
 
 	dmd_bDisplayScan++;
-	if(dmd_bDisplayScan >= DISPLAY_SCANRATE)
+	if(dmd_bDisplayScan >= stDispParam.bScanrate)
 	{
 		dmd_bDisplayScan = 0;
 	}

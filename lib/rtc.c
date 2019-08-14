@@ -12,7 +12,7 @@
 
 uint8_t bDaysinmonth[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 }; 
 
-void rtc_Init(uint8_t sqw_mode)
+void rtc_init(uint8_t sqw_mode)
 {
 	i2c_init();
 	rtc_write(RTC_ADDR, 0x07, sqw_mode);
@@ -55,12 +55,12 @@ uint16_t rtc_hour2min(uint8_t hour)
 	return hour * 60;
 }
 
-uint16_t rtc_getDaysCount(uint8_t month)
+uint16_t rtc_get_daycount(uint8_t month)
 {	
 	return bDaysinmonth[month];
 }
 
-uint8_t rtc_getDayOfWeek(uint8_t year, uint8_t month, uint8_t date) 
+uint8_t rtc_get_dayofweek(uint8_t year, uint8_t month, uint8_t date) 
 {
 	uint16_t	adjustment	= 0;
 	uint16_t	mm			= 0;
@@ -73,7 +73,7 @@ uint8_t rtc_getDayOfWeek(uint8_t year, uint8_t month, uint8_t date)
 	return ((date + (13 * mm - 1) / 5 + yy + yy / 4 - yy / 100 + yy / 400) % 7) + 1;
 }
 
-void rtc_setTime(uint8_t year, uint8_t month, uint8_t date, uint8_t hour, uint8_t min, uint8_t sec)
+void rtc_set_time(uint8_t year, uint8_t month, uint8_t date, uint8_t hour, uint8_t min, uint8_t sec)
 {
 	uint8_t	dayofweek	= 0;
 	
@@ -83,7 +83,7 @@ void rtc_setTime(uint8_t year, uint8_t month, uint8_t date, uint8_t hour, uint8_
 		bDaysinmonth[1] = 29;
 	}
 	
-	dayofweek = rtc_getDayOfWeek(year, month, date);
+	dayofweek = rtc_get_dayofweek(year, month, date);
 	
 	i2c_start();
 	i2c_direction(RTC_ADDR << 1, I2C_Direction_Transmitter);
@@ -101,7 +101,7 @@ void rtc_setTime(uint8_t year, uint8_t month, uint8_t date, uint8_t hour, uint8_
 	i2c_stop();
 }
 
-void rtc_readTime(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day, uint8_t *hour, uint8_t *min, uint8_t *sec)
+void rtc_get_time(uint8_t *year, uint8_t *month, uint8_t *date, uint8_t *day, uint8_t *hour, uint8_t *min, uint8_t *sec)
 {	
 	i2c_start();
 	i2c_direction(RTC_ADDR << 1, I2C_Direction_Transmitter);
