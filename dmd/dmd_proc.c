@@ -30,7 +30,7 @@ uint8_t				matrix_bDisplayBuffer[DISPLAY_MAX_SIZE];
 void matrix_init(void)
 {
 	/* Initialize Display */
-	dmd_prm_set_display(mode_mono, 4, 32, 16, 1, 1);
+	dmd_prm_set_display(1, 4, 32, 16, 1, 1);
 
     matrix_clr_screen(CL_BLACK);
     matrix_set_pixelmap();
@@ -50,7 +50,7 @@ void matrix_clr_screen(eCOLOR color)
 	/* Initialize Local Variables */
 	uint16_t 	i 	= 0	;
 	
-	for(i = 0; i < dmd_prm_get_dispsize() * stDispParam.bMode; i++)
+	for(i = 0; i < stDispParam.nDispsize * stDispParam.bMode; i++)
 	{
 		bDisplayBuffer[i] = color;
 	}
@@ -62,7 +62,7 @@ void matrix_clr_screen(eCOLOR color)
 void matrix_set_screen(void)
 {
 #ifdef ENABLE_DOUBLEBUFFER
-	memcpy(dmd_bDisplayBuffer, matrix_bDisplayBuffer, dmd_prm_get_dispsize() * stDispParam.bMode);
+	memcpy(dmd_bDisplayBuffer, matrix_bDisplayBuffer, stDispParam.nDispsize * stDispParam.bMode);
 #endif
 }
 
@@ -119,7 +119,7 @@ uint16_t matrix_pixelmapping(int16_t nX, int16_t nY)
 #ifdef ENABLE_DMA
 	bytePos = ((uint16_t) (nX / BYTE_SIZE) * stDispParam.bScanrate) + matrix_nPixelMap[nY];
 #else
-	bytePos =	((nY % stDispParam.bHeight) * (stDispParam.bWidth / 8) * dmd_prm_get_totalpanel() * stDispParam.bMode) + ((nX / 8) * stDispParam.bMode)
+	bytePos =	((nY % stDispParam.bHeight) * (stDispParam.bWidth / 8) * stDispParam.bPanelCount * stDispParam.bMode) + ((nX / 8) * stDispParam.bMode)
 				+ (((nY / stDispParam.bHeight) * stDispParam.bPanelAcross * (stDispParam.bWidth / 8)) * stDispParam.bMode);
 #endif
 	

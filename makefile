@@ -7,7 +7,7 @@ STD_PERIPH_STM32 ?= /Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x
 STD_PERIPH_DRIVER ?= $(STD_PERIPH_LIBS)/Libraries/STM32F10x_StdPeriph_Driver/src
 
 # list of peripheral source files
-SOURCES  =	$(STD_PERIPH_LIBS)$(STD_PERIPH_STM32)/system_stm32f10x.c \
+SOURCES =	$(STD_PERIPH_LIBS)$(STD_PERIPH_STM32)/system_stm32f10x.c \
 			$(STD_PERIPH_LIBS)$(STD_PERIPH_STM32)/startup/TrueSTUDIO/startup_stm32f10x_md.s \
 			$(STD_PERIPH_DRIVER)/stm32f10x_rcc.c \
 			$(STD_PERIPH_DRIVER)/stm32f10x_spi.c \

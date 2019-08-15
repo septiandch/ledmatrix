@@ -340,11 +340,11 @@ void dmd_display_scan()
 {	    
 #if !defined(ENABLE_DMA) && defined(DMD_HUB12)
     uint16_t 	i = 0;
-    uint16_t 	rowsize = (stDispParam.bWidth / 8) * dmd_prm_get_totalpanel();
+    uint16_t 	rowsize = (stDispParam.bWidth / 8) * 1;
     uint16_t 	offsetRow1 = rowsize * dmd_bDisplayScan;
-    uint16_t 	offsetRow2 = offsetRow1 + (rowsize * stDispParam.bScanrate);
-    uint16_t 	offsetRow3 = offsetRow2 + (rowsize * stDispParam.bScanrate);
-    uint16_t 	offsetRow4 = offsetRow3 + (rowsize * stDispParam.bScanrate);
+    uint16_t 	offsetRow2 = offsetRow1 + (rowsize * 4);
+    uint16_t 	offsetRow3 = offsetRow2 + (rowsize * 4);
+    uint16_t 	offsetRow4 = offsetRow3 + (rowsize * 4);
 	uint32_t	wGpio_Temp	= 0;
     
     for (i = 0; i < rowsize; i++) 
@@ -400,7 +400,7 @@ void dmd_display_scan()
 	DMD_LATCH();
 
 	dmd_bDisplayScan++;
-	if(dmd_bDisplayScan >= stDispParam.bScanrate)
+	if(dmd_bDisplayScan >= 4)
 	{
 		dmd_bDisplayScan = 0;
 	}

@@ -11,6 +11,17 @@
 /* BOARD SELECT */
 #include "brd/brd_DMD19.h"
 
+/*----- Buffer Option -----*/
 #define ENABLE_DOUBLEBUFFER
+
+/*----- HUB Type -----*/
+/* #define DMD_HUB75 */
+#define DMD_HUB12
+
+/*-----  Peripherals Configuration ----- */
+#define ENABLE_PWM
+#define ENABLE_TIM
+/* #define ENABLE_SPI */
+/* #define ENABLE_DMA */
 
 #endif	/* _PRG_CONF_H_ */

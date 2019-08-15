@@ -11,7 +11,7 @@
 #include "stm32f10x.h"
 
 /* DEFINES */
-#define DISPLAY_MAX_SIZE	(64 * 20)
+#define DISPLAY_MAX_SIZE	(64 * 2)
 
 /* ENUMERATIONS */
 typedef enum
@@ -24,12 +24,15 @@ typedef enum
 /* STRUCTURES*/
 typedef struct
 {
-	eDisplayMode bMode;				/* Mono = 1 , Tri = 2, RGB = 3 */
-	uint8_t bScanrate;				/* 4 = 1/4 , 8 = 1/8, 16 = 1/16 */
-	uint8_t bWidth;					/* Pixel width per panel */
-	uint8_t bHeight;				/* Pixel height per panel */
-	uint8_t bPanelAcross;			/* Total panel across */
-	uint8_t bPanelDown;				/* Total panel down */
+	uint8_t		bMode;					/* Mono = 1 , Tri = 2, RGB = 3 */
+	uint8_t		bScanrate;				/* 4 = 1/4 , 8 = 1/8, 16 = 1/16 */
+	uint8_t		bWidth;					/* Pixel width per panel */
+	uint8_t		bHeight;				/* Pixel height per panel */
+	uint8_t		bRowSize;				/* Row size in bytes */
+	uint8_t		bPanelAcross;			/* Total panel across */
+	uint8_t		bPanelDown;				/* Total panel down */
+	uint8_t		bPanelCount;			/* Total panel */
+	uint16_t	nDispsize;				/* Whole display size */
 } stDisplayParam;
 
 /* VARIABLES */

@@ -12,16 +12,6 @@
 
 #if defined(BRDTYP_DMD19)
 
-/*----- HUB type -----*/
-/* #define DMD_HUB75 */
-#define DMD_HUB12
-
-/*-----  Peripherals Configuration ----- */
-#define ENABLE_PWM
-#define ENABLE_TIM
-/* #define ENABLE_SPI */
-/* #define ENABLE_DMA */
-
 #ifdef ENABLE_TIM
 #	define TIMx_APBClockCmd			RCC_APB1PeriphClockCmd
 #	define TIMx_RCC					RCC_APB1Periph_TIM3
