@@ -383,14 +383,14 @@ void ptime_ReadEvent()
 	{
 		eEvent = EVENT_SYURUQ;
 	}
-	else if(nCurrentTime == ptime_TimeToMins(stPTime[3].hour, stPTime[3].minute))
+	else if((nCurrentTime == ptime_TimeToMins(stPTime[3].hour, stPTime[3].minute)) && (stRTime.day - 1 != 5))
 	{
-		/** Check if current time entering jumuah time */
-		if(stRTime.day == 5)
-		{
-			eEvent = EVENT_JUMUAH;
-		}
-		else eEvent = EVENT_DZUHUR;
+		eEvent = EVENT_DZUHUR;
+	}
+	else if((nCurrentTime + MINUTES_TO_JUMUAH == ptime_TimeToMins(stPTime[3].hour, stPTime[3].minute)) && (stRTime.day - 1 == 5))
+	{
+		/* Check if current time entering jumuah time */
+		eEvent = EVENT_JUMUAH;
 	}
 	else if(nCurrentTime == ptime_TimeToMins(stPTime[4].hour, stPTime[4].minute))
 	{

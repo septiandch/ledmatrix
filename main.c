@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    main.c 
   * @author  Septian D. Chandra
-  * @stRTime.date    17-January-2018
+  * @date    17-January-2018
   * @brief   Main program.
   ******************************************************************************
   */
@@ -47,6 +47,8 @@ enum
 	SEQ_RUN_IQAMAHCOUNTER,
 	SEQ_RUN_IQAMAHIDLE,
 	SEQ_RUN_PRAYERIDLE,
+	SEQ_SET_JUMUAHMESSAGE,
+	SEQ_RUN_JUMUAHMESSAGE,
 	SEQ_QUIT_EVENT,
 	SEQ_POWERSAVE
 };
@@ -143,6 +145,12 @@ int main(void)
 						eDispStatus = IDLE; 
 					}
 					break;
+
+				/* Skip for Jumuah Text */
+				case 5 :
+					/* Quit event */
+					param_mode = SEQ_QUIT_EVENT;
+					break;
 				
 				/*--------------------------------------------*/
 				/*------- PRAYER TIME DISPLAY SEQUENCE -------*/
@@ -196,6 +204,8 @@ int main(void)
 							/* If Imsyak or Isyraq */
 							param_mode = SEQ_QUIT_EVENT;
 						}
+#if 0
+						/* EVENT_JUMUAH handle updated below */
 						else if(eEvent == EVENT_JUMUAH)
 						{
 							nCounter = (30 * 60);
@@ -203,6 +213,7 @@ int main(void)
 							/* If Jumuah */
 							param_mode = SEQ_POWERSAVE;
 						}
+#endif
 						else
 						{
 							/* Enter Adzan Idle */
@@ -258,7 +269,7 @@ int main(void)
 					
 				case SEQ_RUN_PRAYERIDLE:
 					pdisplay_SetMode(MODE_BLANK, NULL, NULL);
-						utils_Delay(15);
+					utils_Delay(15);
 					
 					if(pdisplay_nCounter >= (bPTimeIdle[1] * 60) || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
 					{
@@ -266,7 +277,7 @@ int main(void)
 						pdisplay_nCounter = 0;
 						bButtonState = '\0';
 						
-						/* Enter Iqamah Counter */
+						/* Quit event */
 						param_mode = SEQ_QUIT_EVENT;
 					}
 					break;
@@ -282,8 +293,33 @@ int main(void)
 						pdisplay_nCounter = 0;
 						bButtonState = '\0';
 						
-						/* Enter Iqamah Counter */
+						/* Quit event */
 						param_mode = SEQ_QUIT_EVENT;
+					}
+					break;
+				
+				case SEQ_SET_JUMUAHMESSAGE:
+					pdisplay_GetParam(PARAM_MAX_TASK - 1, &param_message, &param_mode, &param_delay, &param_iteration);
+					
+					nCounter = MINUTES_TO_JUMUAH * 30;
+
+					/* Run Jumuah message */
+					param_mode = SEQ_RUN_JUMUAHMESSAGE;
+					break;
+
+				case SEQ_RUN_JUMUAHMESSAGE:
+					pdisplay_SetMode(MODE_BIGMESSAGE, param_message, nPTimeSel);
+					utils_Delay(param_delay);
+					
+					if(pdisplay_nCounter >= nCounter || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
+					{
+						matrix_ScreenClear(BLACK);
+						pdisplay_nCounter = 0;
+						bButtonState = '\0';
+						
+						nCounter = MINUTES_TO_JUMUAH * 60;
+						param_mode = SEQ_POWERSAVE;
+						pdisplay_SetBrightness(1);
 					}
 					break;
 				
@@ -314,7 +350,7 @@ int main(void)
 				/* Load Display Parameters */
 				pdisplay_GetParam(nTask, &param_message, &param_mode, &param_delay, &param_iteration);
 				
-				if(param_mode > PARAM_MAX_TASK)
+				if(param_mode >= MODE_MAXNUM)
 				{
 					param_mode = 1;
 					param_delay = 15;
@@ -359,6 +395,9 @@ int main(void)
 					break;
 					
 				case EVENT_JUMUAH :
+					param_mode = SEQ_RUN_JUMUAHMESSAGE;
+					break;
+
 				case EVENT_DZUHUR :
 					param_mode = SEQ_ENTER_EVENT;
 					nPTimeSel = 3;

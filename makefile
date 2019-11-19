@@ -1,5 +1,5 @@
 # path to STM32F103 standard peripheral library
-STD_PERIPH_LIBS ?= /home/septiandc/Workspace/ARM/lib/STM32-Library-V3.5
+STD_PERIPH_LIBS ?= //home/septiandc/Workspace/Program/stmlib
 STD_PERIPH_DRIVER ?= $(STD_PERIPH_LIBS)/Libraries/STM32F10x_StdPeriph_Driver/src
 
 # list of source files
@@ -39,9 +39,8 @@ ST_FLASH ?= st-flash
 
 # specify compiler flags
 CFLAGS  = -w -g -O2 -Wall
-CFLAGS += -T$(STD_PERIPH_LIBS)/Project/STM32F10x_StdPeriph_Template/TrueSTUDIO/STM3210B-EVAL/stm32_flash.ld
-CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
-CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CFLAGS += -T$(STD_PERIPH_LIBS)/Linker/stm32f103.ld
+CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m3 -mthumb-interwork
 CFLAGS += --specs=rdimon.specs
 CFLAGS += -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
 CFLAGS += -Wl,--gc-sections

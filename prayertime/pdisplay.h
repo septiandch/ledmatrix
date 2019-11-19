@@ -17,7 +17,7 @@
 #include "fonts/ArialBlack16.h"
 
 /* DEFINITIONS */
-#define PARAM_MAX_TASK		5
+#define PARAM_MAX_TASK		6
 #define PARAM_MAX_LEN		81
 
 #define MEM_CL_BASE			(MEM_BASE + 0x0F)
@@ -45,7 +45,9 @@ typedef enum
 	MODE_WAITPRAYER,
 	MODE_COUNTDOWN,
 	MODE_IQAMAH,
-	MODE_BLANK
+	MODE_BLANK,
+	MODE_JUMUAH,
+	MODE_MAXNUM
 } eDisplayMode;
 
 typedef enum

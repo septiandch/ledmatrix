@@ -24,7 +24,7 @@
 #else
 #	define MINUTES_TO_ADZAN			1
 #	define MINUTES_WAIT_ADZAN		10
-#	define MINUTES_TO_JUMUAH		40
+#	define MINUTES_TO_JUMUAH		20
 #	define MINUTES_PRAYER_TIME		10 
 #	define SECONDS_TO_ADZAN			6
 #	define SECONDS_TO_IQAMAH		2

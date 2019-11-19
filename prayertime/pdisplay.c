@@ -208,13 +208,14 @@ void pdisplay_GetParam(uint8_t _task, char *_str, uint8_t *_mode, uint8_t *_dela
 	}
 	else
 	{
-		if(_task % 2 == 0)
+		/* Show Day, Date / Hiri Calendar */
+		if(_task == PARAM_MAX_TASK)
 		{
-			*_mode =  MODE_HIJRIDATE;
+			*_mode = MODE_HIJRIDATE;
 		}
-		else
+		else if(_task == PARAM_MAX_TASK + 1)
 		{
-			*_mode =  MODE_DATETIME;
+			*_mode = MODE_DATETIME;
 		}
 		
 		*_delay = 1;
