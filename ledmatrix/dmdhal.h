@@ -16,8 +16,8 @@
 #include "misc.h"
 
 /* PERIPHHERALS CONFIGURATION */
-/* #define DMD_HUB75 */
-#define DMD_HUB12
+#define DMD_HUB75
+/* #define DMD_HUB12 */
 
 /* #define ENABLE_SPI */
 /* #define ENABLE_DMA */

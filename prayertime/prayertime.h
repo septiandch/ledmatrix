@@ -24,7 +24,7 @@
 #else
 #	define MINUTES_TO_ADZAN			1
 #	define MINUTES_WAIT_ADZAN		10
-#	define MINUTES_TO_JUMUAH		40
+#	define MINUTES_TO_JUMUAH		20
 #	define MINUTES_PRAYER_TIME		10 
 #	define SECONDS_TO_ADZAN			6
 #	define SECONDS_TO_IQAMAH		2
@@ -33,18 +33,18 @@
 #define	USE_32KMEM
 
 #define MEM_BASE					0x0EA6
-#define MEM_PWRSAVE_HOUR			(uint16_t) (MEM_BASE + 0x00)
-#define MEM_PWRSAVE_MINUTE			(uint16_t) (MEM_BASE + 0x01)
-#define MEM_PWRSAVE_DURATION		(uint16_t) (MEM_BASE + 0x02)
-#define MEM_IQAMAH_SUB				(uint8_t)  (MEM_BASE + 0x04)
-#define MEM_IQAMAH_DZU				(uint8_t)  (MEM_BASE + 0x05)
-#define MEM_IQAMAH_ASH				(uint8_t)  (MEM_BASE + 0x06)
-#define MEM_IQAMAH_MAG				(uint8_t)  (MEM_BASE + 0x07)
-#define MEM_IQAMAH_ISY				(uint8_t)  (MEM_BASE + 0x08)
-#define MEM_ADZAN_IDLE				(uint8_t)  (MEM_BASE + 0x09)
-#define MEM_PRAYER_IDLE				(uint8_t)  (MEM_BASE + 0x0A)
-#define MEM_HIJRI_ADJUST			(uint8_t)  (MEM_BASE + 0x0B)
-#define MEM_BRIGHTNESS				(uint8_t)  (MEM_BASE + 0x0C)
+#define MEM_PWRSAVE_HOUR			(uint16_t)(MEM_BASE + 0x0000)
+#define MEM_PWRSAVE_MINUTE			(uint16_t)(MEM_BASE + 0x0001)
+#define MEM_PWRSAVE_DURATION		(uint16_t)(MEM_BASE + 0x0002)
+#define MEM_IQAMAH_SUB				(uint16_t)(MEM_BASE + 0x0004)
+#define MEM_IQAMAH_DZU				(uint16_t)(MEM_BASE + 0x0005)
+#define MEM_IQAMAH_ASH				(uint16_t)(MEM_BASE + 0x0006)
+#define MEM_IQAMAH_MAG				(uint16_t)(MEM_BASE + 0x0007)
+#define MEM_IQAMAH_ISY				(uint16_t)(MEM_BASE + 0x0008)
+#define MEM_ADZAN_IDLE				(uint16_t)(MEM_BASE + 0x0009)
+#define MEM_PRAYER_IDLE				(uint16_t)(MEM_BASE + 0x000A)
+#define MEM_HIJRI_ADJUST			(uint16_t)(MEM_BASE + 0x000B)
+#define MEM_BRIGHTNESS				(uint16_t)(MEM_BASE + 0x000C)
 
 #define BUTTON_GPIO_RCC				RCC_APB2Periph_GPIOA
 #define BUTTON_GPIO					GPIOA
