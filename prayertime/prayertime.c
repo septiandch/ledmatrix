@@ -239,8 +239,8 @@ void ptime_GetPrayerTime(stRealTime pstRealTime, stPrayerTime *pstPrayerTime)
 	pstPrayerTime[0].hour		= (uint8_t) (i / 60);
 	pstPrayerTime[0].minute		= (uint8_t) (i - (pstPrayerTime[0].hour * 60));
 	
-	/* Set Sunrise time */
-	i = (pstPrayerTime[1].hour * 60) + pstPrayerTime[1].minute + 90;
+	/* Set Sunrise (Syuruq) time */
+	i = (pstPrayerTime[1].hour * 60) + pstPrayerTime[1].minute + 95;
 	pstPrayerTime[2].hour		= (uint8_t) (i / 60);
 	pstPrayerTime[2].minute		= (uint8_t) (i - (pstPrayerTime[2].hour * 60));
 #endif

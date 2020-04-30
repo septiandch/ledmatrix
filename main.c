@@ -47,6 +47,9 @@ enum
 	SEQ_RUN_IQAMAHCOUNTER,
 	SEQ_RUN_IQAMAHIDLE,
 	SEQ_RUN_PRAYERIDLE,
+	SEQ_SET_PREJUMUAHMESSAGE,
+	SEQ_RUN_PREJUMUAHMESSAGE,
+	SEQ_RUN_JUMUAHCOUNTER,
 	SEQ_SET_JUMUAHMESSAGE,
 	SEQ_RUN_JUMUAHMESSAGE,
 	SEQ_QUIT_EVENT,
@@ -79,7 +82,33 @@ int main(void)
 	pdisplay_Init();
 	pdisplay_SetBrightness(eeprom_ReadByte(MEM_BRIGHTNESS));
 	utils_Delay(10);
-					
+
+	/* -- Manual Prayer time input --
+	_stRTime =	(stRealTime) {19, 1, 18, 0, 0, 0};
+									
+	_stPTime[0] = (stPrayerTime) { 4, 17 };
+	_stPTime[1] = (stPrayerTime) { 4, 27 };
+	_stPTime[2] = (stPrayerTime) { 5, 48 };
+	_stPTime[3] = (stPrayerTime) { 12, 4 };
+	_stPTime[4] = (stPrayerTime) { 15, 28 };
+	_stPTime[5] = (stPrayerTime) { 18, 18 };
+	_stPTime[6] = (stPrayerTime) { 19, 32 };
+						
+	ptime_SetPrayerTime(_stRTime, &_stPTime);
+
+	_stRTime =	(stRealTime) {19, 1, 19, 0, 0, 0};
+									
+	_stPTime[0] = (stPrayerTime) { 4, 17 };
+	_stPTime[1] = (stPrayerTime) { 4, 27 };
+	_stPTime[2] = (stPrayerTime) { 5, 48 };
+	_stPTime[3] = (stPrayerTime) { 12, 4 };
+	_stPTime[4] = (stPrayerTime) { 15, 28 };
+	_stPTime[5] = (stPrayerTime) { 18, 18 };
+	_stPTime[6] = (stPrayerTime) { 19, 32 };
+						
+	ptime_SetPrayerTime(_stRTime, &_stPTime);
+	*/
+
 	while(1)
 	{			
 		/*--------------------------------------------*/
@@ -94,7 +123,7 @@ int main(void)
 				/*---------- MAIN DISPLAY SEQUENCE -----------*/
 				/*--------------------------------------------*/
 				
-				case 1 :
+				case MODE_SMALLMESSAGE :
 					pdisplay_SetMode(MODE_SMALLMESSAGE, param_message, nPTimeSel);
 					utils_Delay(param_delay);
 					
@@ -107,7 +136,7 @@ int main(void)
 					}
 					break;
 					
-				case 2 :
+				case MODE_BIGMESSAGE :
 					pdisplay_SetMode(MODE_BIGMESSAGE, param_message, NULL);
 					utils_Delay(param_delay);
 					
@@ -120,7 +149,7 @@ int main(void)
 					}
 					break;
 				
-				case 3 :
+				case MODE_DATETIME :
 					pdisplay_SetMode(MODE_DATETIME, NULL, nPTimeSel);
 					utils_Delay(param_delay);
 					
@@ -133,7 +162,7 @@ int main(void)
 					}
 					break;
 					
-				case 4 :
+				case MODE_HIJRIDATE :
 					pdisplay_SetMode(MODE_HIJRIDATE, NULL, nPTimeSel);
 					utils_Delay(param_delay);
 					
@@ -147,7 +176,7 @@ int main(void)
 					break;
 
 				/* Skip for Jumuah Text */
-				case 5 :
+				case MODE_JUMUAH :
 					/* Quit event */
 					param_mode = SEQ_QUIT_EVENT;
 					break;
@@ -190,7 +219,7 @@ int main(void)
 					}
 					break;
 					
-				case SEQ_RUN_ADZANMESSAGE :			
+				case SEQ_RUN_ADZANMESSAGE :
 					pdisplay_SetMode(MODE_PRAYERTIME, NULL, nPTimeSel);
 					utils_Delay(15);
 					
@@ -298,17 +327,76 @@ int main(void)
 					}
 					break;
 				
-				case SEQ_SET_JUMUAHMESSAGE:
-					pdisplay_GetParam(PARAM_MAX_TASK - 1, &param_message, &param_mode, &param_delay, &param_iteration);
+				case SEQ_SET_PREJUMUAHMESSAGE:
+					/* Read Jumuah message */
+					memset(&_message, '\0', PARAM_MAX_LEN);
+						
+					fmem_ReadString(((PARAM_MAX_TASK - 1) * PARAM_MAX_LEN) + 3, &param_message);
 					
-					nCounter = MINUTES_TO_JUMUAH * 30;
+					param_delay = 10;
+					pdisplay_nCounter = 0;
 
-					/* Run Jumuah message */
-					param_mode = SEQ_RUN_JUMUAHMESSAGE;
+					nCounter = (MINUTES_TO_JUMUAH - 1) * 60;
+
+					matrix_ScreenClear(BLACK);
+
+					/* Run Pre-Jumuah message */
+					eDispStatus = RUN;
+					param_mode	= SEQ_RUN_PREJUMUAHMESSAGE;
+					break;
+				
+				case SEQ_RUN_PREJUMUAHMESSAGE:
+					pdisplay_SetMode(MODE_BIGMESSAGE2, param_message, NULL);
+					utils_Delay(param_delay);
+					
+					if(pdisplay_nCounter >= nCounter || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
+					{
+						matrix_ScreenClear(BLACK);
+						pdisplay_nCounter = 0;
+						bButtonState = '\0';
+						
+						nCounter = 60;
+						nPTimeCounter = nCounter;
+						param_mode = SEQ_RUN_JUMUAHCOUNTER;
+					}
+					break;
+
+				case SEQ_RUN_JUMUAHCOUNTER:
+					pdisplay_SetMode(MODE_COUNTDOWN, NULL, 3);
+					utils_Delay(15);
+					
+					if(pdisplay_nCounter >= nCounter || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
+					{
+						matrix_ScreenClear(BLACK);
+						pdisplay_nCounter = 0;
+						bButtonState = '\0';
+						
+						ptime_SetBuzzer(1);
+						utils_Delay(BUZZER_DELAY);
+						ptime_SetBuzzer(0);
+						
+						/* Enter Jumuah Adzan Message */
+						param_mode = SEQ_SET_JUMUAHMESSAGE;
+					}
+					break;
+
+				case SEQ_SET_JUMUAHMESSAGE:
+					pdisplay_SetMode(MODE_PRAYERTIME, NULL, 3);
+					utils_Delay(15);
+					
+					if(pdisplay_nCounter >= 3 || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
+					{
+						matrix_ScreenClear(BLACK);
+						
+						nCounter = 15;
+						pdisplay_nCounter = 0;
+
+						param_mode = SEQ_RUN_JUMUAHMESSAGE;
+					}
 					break;
 
 				case SEQ_RUN_JUMUAHMESSAGE:
-					pdisplay_SetMode(MODE_BIGMESSAGE, param_message, nPTimeSel);
+					pdisplay_SetMode(MODE_BIGMESSAGE, param_message, NULL);
 					utils_Delay(param_delay);
 					
 					if(pdisplay_nCounter >= nCounter || GPIO_ReadInputData(BUTTON_GPIO) & (BUTTON_PIN_A | BUTTON_PIN_B /* | BUTTON_PIN_C */ ))
@@ -361,7 +449,7 @@ int main(void)
 				
 				/* Assign next Task */
 				nTask++;
-				if(nTask == PARAM_MAX_TASK + 2)
+				if(nTask > PARAM_MAX_TASK)
 				{
 					/* Reset Task */
 					nTask = 0;
@@ -395,7 +483,8 @@ int main(void)
 					break;
 					
 				case EVENT_JUMUAH :
-					param_mode = SEQ_RUN_JUMUAHMESSAGE;
+					param_mode = SEQ_SET_PREJUMUAHMESSAGE;
+					nPTimeSel = 3;
 					break;
 
 				case EVENT_DZUHUR :
@@ -470,7 +559,7 @@ int main(void)
 			
 			switch(usart_sMessage[usart_nIndex - 2])
 			{
-				/* Message Command */
+				/* Message Write Command */
 				case '&' :
 					memset(&_message, '\0', PARAM_MAX_LEN);
 					memcpy(&_message, &usart_sMessage, usart_nIndex - 3);
@@ -486,10 +575,31 @@ int main(void)
 					matrix_ScreenClear(BLACK);
 					
 					bCmdState = 1;
-					usart_puts("Message Update OK\n\r");
+					/* usart_puts("Message Update OK\n\r"); */ /* Notification disabled for Message Read from Application */
 					usart_ClearMessage();
 					break;
 					
+				/* Message Read Command */
+				case '"' :
+					if(usart_sMessage[0] == 'R')
+					{
+						memset(&_message, '\0', PARAM_MAX_LEN);
+						
+						fmem_ReadString((usart_sMessage[1] - '0') * PARAM_MAX_LEN, &_message);
+						
+						bCmdState = 1;
+
+						/* Send current stored message */
+						usart_puts(_message);
+					}
+					else
+					{
+						usart_puts("NG");
+					}
+
+					usart_ClearMessage();
+					break;
+				
 				/* Prayer Time Command */
 				case '!' :
 					if(usart_nIndex - 1 == 18)
@@ -685,7 +795,7 @@ int main(void)
 				/* EEPROM Dump Command */
 				case '>' :
 					if(usart_sMessage[0] == 'R' && usart_sMessage[1] == 'D')
-					{						
+					{			
 						monthIndex = ((usart_sMessage[2] - '0') * 10) + (usart_sMessage[3] - '0');
 						
 						readIndex = 0;
@@ -696,7 +806,7 @@ int main(void)
 						
 						readIndex *= 10;
 						
-						usart_puts("\r\r-----EEPROM DUMP-----\r");
+						usart_puts("\n\r\n\r-----EEPROM DUMP-----\n\r");
 						for(iteration = readIndex; iteration < readIndex + (10 * rtc_getDaysCount(monthIndex)); iteration += 10)
 						{
 							usart_puti(eeprom_ReadByte(iteration + 0));
@@ -718,7 +828,7 @@ int main(void)
 							usart_puti(eeprom_ReadByte(iteration + 8));
 							usart_putc(':');
 							usart_puti(eeprom_ReadByte(iteration + 9));
-							usart_putc('\r');
+							usart_puts("\n\r");
 						}				
 					}
 					

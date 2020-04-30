@@ -61,6 +61,20 @@ void pdisplay_SetMode(eDisplayMode mode, char *message, uint8_t nPTimeList)
 			
 			pdisplay_nCounter += matrix_DrawMarquee(40, 0, 120, 15, message, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
 			break;
+
+		case MODE_BIGMESSAGE2 :
+			matrix_SetFont(Arial16);
+			utils_Timestamp(stRTime.hour, stRTime.minute, NONE, bColonState, &sMessageBuff);
+			matrix_DrawString(0, 0, sMessageBuff, stDisplayColor.clock);
+			
+			matrix_DrawMarquee(40, 0, 120, 15, message, SCROLL_RIGHT_TO_LEFT, stDisplayColor.text);
+
+			if(pdisplay_bColonState != bColonState)
+			{
+				pdisplay_bColonState = bColonState;
+				pdisplay_nCounter++;
+			}
+			break;
 			
 		case MODE_SMALLMESSAGE :
 			matrix_SetFont(System5x7);
@@ -192,8 +206,8 @@ void pdisplay_GetParam(uint8_t _task, char *_str, uint8_t *_mode, uint8_t *_dela
 {
 	uint8_t DataHi = 0;
 	uint8_t DataLo = 0;
-	
-	if(_task < PARAM_MAX_TASK)
+
+	if(_task < PARAM_MAX_TASK - 1)
 	{
 		fmem_ReadHalfWord(_task * PARAM_MAX_LEN, &DataHi, &DataLo);
 		*_mode = DataHi - '0';
@@ -203,18 +217,20 @@ void pdisplay_GetParam(uint8_t _task, char *_str, uint8_t *_mode, uint8_t *_dela
 		
 		fmem_ReadHalfWord((_task * PARAM_MAX_LEN) + 2, &DataHi, &DataLo);
 		*_iteration = DataHi - '0';
+
 		
 		fmem_ReadString((_task * PARAM_MAX_LEN) + 3, _str);
 	}
 	else
 	{
-		/* Show Day, Date / Hiri Calendar */
-		if(_task == PARAM_MAX_TASK)
+		if(_task % 2 == 0)
 		{
+			/* Show Hiri Calendar */
 			*_mode = MODE_HIJRIDATE;
 		}
-		else if(_task == PARAM_MAX_TASK + 1)
+		else
 		{
+			/* Show Gregorian Calendar */
 			*_mode = MODE_DATETIME;
 		}
 		
@@ -224,12 +240,12 @@ void pdisplay_GetParam(uint8_t _task, char *_str, uint8_t *_mode, uint8_t *_dela
 	}
 }
 
-void pdisplay_SetColor(uint8_t addr, eCOLOR color)
+void pdisplay_SetColor(uint16_t addr, eCOLOR color)
 {
 	eeprom_WriteByte(addr, (uint8_t) color);
 }
 
-eCOLOR pdisplay_GetColor(uint8_t addr)
+eCOLOR pdisplay_GetColor(uint16_t addr)
 {
 	return (eCOLOR) eeprom_ReadByte(addr);
 }
