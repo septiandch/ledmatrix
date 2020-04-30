@@ -1,1 +1,3 @@
-This branch including latest Al-Ikhlas prayer time running text
+Al-Ikhlas moving sign
+HUB12 (Mono)
+14 (7x2) panel
