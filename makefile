@@ -1,6 +1,8 @@
-# path to STM32F103 standard peripheral library
-STD_PERIPH_LIBS ?= /home/septiandc/Workspace/Program/stmlib
-STD_PERIPH_DRIVER ?= $(STD_PERIPH_LIBS)/Libraries/STM32F10x_StdPeriph_Driver/src
+SHELL := cmd
+
+# Use Environment Variable as path to STM32F103 standard peripheral library
+STD_PERIPH_STM32 ?= $(STM_LIB)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x
+STD_PERIPH_DRIVER ?= $(STM_LIB)/Libraries/STM32F10x_StdPeriph_Driver/src
 
 # list of source files
 SOURCES  = main.c
@@ -15,8 +17,8 @@ SOURCES += peripherals/i2c.c
 SOURCES += peripherals/rtc.c
 SOURCES += peripherals/at24cxx.c
 SOURCES += peripherals/fmem.c
-SOURCES += $(STD_PERIPH_LIBS)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/system_stm32f10x.c
-SOURCES += $(STD_PERIPH_LIBS)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/startup/TrueSTUDIO/startup_stm32f10x_md.s
+SOURCES += $(STD_PERIPH_STM32)/system_stm32f10x.c
+SOURCES += $(STD_PERIPH_STM32)/startup/TrueSTUDIO/startup_stm32f10x_md.s
 SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_rcc.c
 SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_spi.c
 SOURCES += $(STD_PERIPH_DRIVER)/stm32f10x_dma.c
@@ -41,16 +43,16 @@ ST_FLASH ?= st-flash
 
 # specify compiler flags
 CFLAGS  = -w -g -O2 -Wall
-CFLAGS += -T$(STD_PERIPH_LIBS)/Project/STM32F10x_StdPeriph_Template/TrueSTUDIO/STM3210B-EVAL/stm32_flash.ld
+CFLAGS += -T$(STM_LIB)/Project/STM32F10x_StdPeriph_Template/TrueSTUDIO/STM3210B-EVAL/stm32_flash.ld
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS += --specs=rdimon.specs
 CFLAGS += -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
 CFLAGS += -Wl,--gc-sections
 CFLAGS += -I.
-CFLAGS += -I$(STD_PERIPH_LIBS)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/
-CFLAGS += -I$(STD_PERIPH_LIBS)/Libraries/CMSIS/CM3/CoreSupport/
-CFLAGS += -I$(STD_PERIPH_LIBS)/Libraries/STM32F10x_StdPeriph_Driver/inc/
+CFLAGS += -I$(STM_LIB)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x/
+CFLAGS += -I$(STM_LIB)/Libraries/CMSIS/CM3/CoreSupport/
+CFLAGS += -I$(STM_LIB)/Libraries/STM32F10x_StdPeriph_Driver/inc/
 
 OBJS	= $(SOURCES:.c=$(OBJDIR)/%.o)
 
@@ -58,7 +60,7 @@ all: $(PROJECT).elf
 
 # compile
 $(PROJECT).elf: $(SOURCES)
-	mkdir -p $(OBJDIR)
+	mkdir $(OBJDIR)
 	$(CC) $(CFLAGS) $^ -o $@
 	$(OBJCOPY) -O ihex $(PROJECT).elf $(PROJECT).hex
 	$(OBJCOPY) -O binary $(PROJECT).elf $(PROJECT).bin
@@ -67,7 +69,7 @@ $(PROJECT).elf: $(SOURCES)
 # rm -f *.o *.elf *.hex *.bin
 clean:
 	rm -f $(OBJDIR)/*.o $(OBJDIR)/*.elf $(OBJDIR)/*.hex $(OBJDIR)/*.bin
-	rmdir -p $(OBJDIR)
+	rmdir $(OBJDIR)
 
 # flash
 flash:
